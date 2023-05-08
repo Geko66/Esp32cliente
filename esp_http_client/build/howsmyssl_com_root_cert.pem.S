@@ -1,4 +1,4 @@
-/* * Data converted from C:/Users/Ismael/Desktop/esp_http_client/main/howsmyssl_com_root_cert.pem
+/* * Data converted from C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/howsmyssl_com_root_cert.pem
  * (null byte appended)
  */
 .data

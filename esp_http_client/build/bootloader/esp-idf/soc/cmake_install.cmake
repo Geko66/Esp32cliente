@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/Ismael/esp1/esp-idf/components/soc
+# Install script for directory: C:/Users/Ismael/esp/esp-idf/components/soc
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,6 +39,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/Ismael/Desktop/esp_http_client/build/bootloader/esp-idf/soc/esp32/cmake_install.cmake")
+  include("C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/build/bootloader/esp-idf/soc/esp32/cmake_install.cmake")
 endif()
 

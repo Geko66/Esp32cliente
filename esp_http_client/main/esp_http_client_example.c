@@ -8,6 +8,7 @@
 #include "cJSON.h"
 #include "esp_system.h"
 #include "esp_event.h"
+#include "tcpip_adapter.h"
 
 
 // Declarar manejador de eventos de Wi-Fi
@@ -26,10 +27,10 @@ void send_message(char *message)
         .buffer_size = strlen(message) + 32,
         .timeout_ms = 10000,
     };
-    esp_http_client_handle_t evento;
-    esp_http_client_set_header(evento, "X-Server-ID", "server1");
-    esp_http_client_set_header(evento, "Content-Type", "application/json");
+    
     esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_http_client_set_header(client, "X-Server-ID", "server1");
+    esp_http_client_set_header(client, "Content-Type", "application/json");
 
     // Crear cuerpo de solicitud JSON
     cJSON *root = cJSON_CreateObject();
@@ -72,13 +73,10 @@ void get_messages()
     esp_http_client_config_t config = {
         .url = "http://192.168.1.69:500/mensajes",
         .method = HTTP_METHOD_GET,
-        .headers = {
-            "X-Server-ID", "server1",
-            NULL,
-        },
         .timeout_ms = 10000,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_http_client_set_header(client, "X-Server-ID", "server1");
 
     // Enviar solicitud y recibir respuesta
     esp_err_t err = esp_http_client_perform(client);
