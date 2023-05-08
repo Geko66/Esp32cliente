@@ -8,7 +8,7 @@
 #include "cJSON.h"
 #include "esp_system.h"
 #include "esp_event.h"
-#include "tcpip_adapter.h"
+#include "esp_netif.h"
 
 
 // Declarar manejador de eventos de Wi-Fi
@@ -116,9 +116,10 @@ esp_http_client_cleanup(client);
 // Programa principal
 void app_main()
 {
+
 // Iniciar Wi-Fi
-tcpip_adapter_init();
-esp_event_loop_init(wifi_event_handler, NULL);
+esp_netif_init();
+esp_event_loop_run(wifi_event_handler,NULL);
 wifi_init_config_t wifi_config = WIFI_INIT_CONFIG_DEFAULT();
 esp_wifi_init(&wifi_config);
 esp_wifi_set_storage(WIFI_STORAGE_RAM);
@@ -149,27 +150,25 @@ while (1) {
 esp_http_client_config_t config = {
     .url = "http://192.168.1.69:500/iniciar",
     .method = HTTP_METHOD_GET,
-    .headers = {
-        "X-Server-ID", "server1",
-        NULL,
-    },
     .timeout_ms = 10000,
 };
-esp_http_client_handle_t client = esp_http_client_init(&config);
-esp_err_t err = esp_http_client_perform(client);
+esp_http_client_handle_t cliente = esp_http_client_init(&config);
+esp_http_client_set_header(cliente, "X-Server-ID", "server1");
+esp_err_t err = esp_http_client_perform(cliente);
 if (err != ESP_OK) {
     ESP_LOGE("app_main", "HTTP request failed: %s", esp_err_to_name(err));
-    esp_http_client_cleanup(client);
+    esp_http_client_cleanup(cliente);
     return;
 }
-char *response = (char *)malloc(esp_http_client_get_content_length(client) + 1);
-esp_http_client_read_response(client, response, esp_http_client_get_content_length(client));
-response[esp_http_client_get_content_length(client)] = '\0';
+char *response = (char *)malloc(esp_http_client_get_content_length(cliente) + 1);
+esp_http_client_read_response(cliente, response, esp_http_client_get_content_length(cliente));
+response[esp_http_client_get_content_length(cliente)] = '\0';
 ESP_LOGI("app_main", "HTTP response: %s", response);
 free(response);
-esp_http_client_cleanup(client);
+esp_http_client_cleanup(cliente);
 
 // Enviar mensaje
+
 const char *message = "Hola, servidor!";
 cJSON *json = cJSON_CreateObject();
 cJSON_AddStringToObject(json, "message", message);
@@ -177,41 +176,42 @@ char *payload = cJSON_Print(json);
 cJSON_Delete(json);
 config.url = "http://192.168.1.69:500/enviarMSG";
 config.method = HTTP_METHOD_POST;
-config.headers = (const char *[]){"X-Server-ID", "server1", NULL};
-config.post_data = payload;
-config.post_data_len = strlen(payload);
-client = esp_http_client_init(&config);
-err = esp_http_client_perform(client);
+esp_http_client_set_header(cliente, "X-Server-ID", "server1");
+esp_http_client_set_post_field(cliente,payload,strlen(payload));
+
+
+err = esp_http_client_perform(cliente);
 if (err != ESP_OK) {
     ESP_LOGE("app_main", "HTTP request failed: %s", esp_err_to_name(err));
-    esp_http_client_cleanup(client);
+    esp_http_client_cleanup(cliente);
     free(payload);
     return;
 }
-response = (char *)malloc(esp_http_client_get_content_length(client) + 1);
-esp_http_client_read_response(client, response, esp_http_client_get_content_length(client));
-response[esp_http_client_get_content_length(client)] = '\0';
+response = (char *)malloc(esp_http_client_get_content_length(cliente) + 1);
+esp_http_client_read_response(cliente, response, esp_http_client_get_content_length(cliente));
+response[esp_http_client_get_content_length(cliente)] = '\0';
 ESP_LOGI("app_main", "HTTP response: %s", response);
 free(response);
-esp_http_client_cleanup(client);
+esp_http_client_cleanup(cliente);
 free(payload);
 
 // Obtener mensajes
 config.url = "http://192.168.1.69:500/mensajes";
 config.method = HTTP_METHOD_GET;
-config.headers = (const char *[]){"X-Server-ID", "server1", NULL};
-client = esp_http_client_init(&config);
-err = esp_http_client_perform(client);
+esp_http_client_set_header(cliente, "X-Server-ID", "server1");
+
+cliente = esp_http_client_init(&config);
+err = esp_http_client_perform(cliente);
 if (err != ESP_OK) {
     ESP_LOGE("app_main", "HTTP request failed: %s", esp_err_to_name(err));
-    esp_http_client_cleanup(client);
+    esp_http_client_cleanup(cliente);
     return;
 }
-response = (char *)malloc(esp_http_client_get_content_length(client) + 1);
-esp_http_client_read_response(client, response, esp_http_client_get_content_length(client));
-response[esp_http_client_get_content_length(client)] = '\0';
+response = (char *)malloc(esp_http_client_get_content_length(cliente) + 1);
+esp_http_client_read_response(cliente, response, esp_http_client_get_content_length(cliente));
+response[esp_http_client_get_content_length(cliente)] = '\0';
 ESP_LOGI("app_main", "HTTP response: %s", response);
 free(response);
-esp_http_client_cleanup(client);
+esp_http_client_cleanup(cliente);
 get_messages();
 }
