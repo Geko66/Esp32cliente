@@ -102,7 +102,7 @@ if (messages != NULL && cJSON_IsArray(messages)) {
         cJSON *text = cJSON_GetObjectItem(message, "text");
         cJSON *timestamp = cJSON_GetObjectItem(message, "timestamp");
         if (text != NULL && cJSON_IsString(text) && timestamp != NULL && cJSON_IsNumber(timestamp)) {
-            ESP_LOGI("get_messages", "Message %d: %s (%lld)", i+1, text->valuestring, timestamp->valueint);
+            ESP_LOGI("get_messages", "Message %d: %s (%lld)", i+1, text->valuestring, (long long int)timestamp->valueint);
         }
     }
 }
