@@ -3,5 +3,12 @@
   "idf.adapterTargetName": "esp32",
   "files.associations": {
     "esp_http_client.h": "c"
-  }
+  },
+  "idf.portWin": "COM3",
+  "idf.flashType": "UART",
+  "python.testing.pytestArgs": [
+    "main"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }

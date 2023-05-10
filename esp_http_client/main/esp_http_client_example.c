@@ -126,8 +126,8 @@ esp_wifi_set_storage(WIFI_STORAGE_RAM);
 esp_wifi_set_mode(WIFI_MODE_STA);
 wifi_config_t sta_config = {
 .sta = {
-.ssid = "nombre_de_la_red",
-.password = "contraseña_de_la_red",
+.ssid = "V1AHC9",
+.password = "pMadrid77",
 .scan_method = WIFI_FAST_SCAN,
 .sort_method = WIFI_CONNECT_AP_BY_SIGNAL,
 .threshold.rssi = -127,
