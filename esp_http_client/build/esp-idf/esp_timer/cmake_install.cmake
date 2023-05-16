@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/ismae/esp/esp-idf/components/esp_timer
+# Install script for directory: C:/Users/ismae/esp1/components/esp_timer
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

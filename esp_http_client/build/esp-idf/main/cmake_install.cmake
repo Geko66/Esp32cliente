@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/ismae/Desktop/esp_http_client/main
+# Install script for directory: C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

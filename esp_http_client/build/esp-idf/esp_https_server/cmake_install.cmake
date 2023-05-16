@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/ismae/esp/esp-idf/components/esp_https_server
+# Install script for directory: C:/Users/ismae/esp1/components/esp_https_server
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

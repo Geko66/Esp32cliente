@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/ismae/esp/esp-idf/components/bt
+# Install script for directory: C:/Users/ismae/esp1/components/bt
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -133,7 +133,7 @@ static void http_rest_with_url(void)
      * If URL as well as host and path parameters are specified, values of host and path will be considered.
      */
     esp_http_client_config_t config = {
-        .url ="http://192.168.1.219:500/iniciar",
+        .url ="http://192.168.1.116:500/iniciar",
         .method= HTTP_METHOD_GET,
         .event_handler = _http_event_handler,
         .user_data = local_response_buffer,        // Pass address of local buffer to get response
@@ -156,7 +156,7 @@ static void http_rest_with_url(void)
     // POST
     esp_http_client_handle_t cliente = esp_http_client_init(&config);
     const char *post_data = "{\"message\":\"value1\"}";
-    esp_http_client_set_url(cliente, "http://192.168.1.219:500/enviarMSG");
+    esp_http_client_set_url(cliente, "http://192.168.1.116:500/enviarMSG");
     esp_http_client_set_method(cliente, HTTP_METHOD_POST);
     esp_http_client_set_header(cliente, "X-Server-ID", "esp1");
     esp_http_client_set_header(cliente, "Content-Type", "application/json");
@@ -171,37 +171,52 @@ static void http_rest_with_url(void)
     }
     //GET mensajes
  esp_http_client_handle_t cliente2 = esp_http_client_init(&config);
-esp_http_client_set_url(cliente2, "http://192.168.1.219:500/mensajes");
-esp_http_client_set_header(cliente2, "X-Server-ID", "esp1");
-esp_http_client_set_method(cliente2, HTTP_METHOD_GET);
-err = esp_http_client_perform(cliente2);
+esp_http_client_set_url(cliente, "http://192.168.1.116:500/mensajes");
+esp_http_client_set_header(cliente, "X-Server-ID", "esp1");
+esp_http_client_set_method(cliente, HTTP_METHOD_GET);
+err = esp_http_client_perform(cliente);
 if (err == ESP_OK) {
     ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
-            esp_http_client_get_status_code(cliente2),
-            esp_http_client_get_content_length(cliente2));
+            esp_http_client_get_status_code(cliente),
+            esp_http_client_get_content_length(cliente));
 
     // Leer los datos de la respuesta HTTP
-    char *buffer = malloc(esp_http_client_get_content_length(cliente2) + 1);
-    int read_len = esp_http_client_read(cliente2, buffer, esp_http_client_get_content_length(cliente));
-    buffer[read_len] = '\0';
+    char *buffer = malloc(esp_http_client_get_content_length(cliente) + 1);
+    int read_len = esp_http_client_read(cliente2, local_response_buffer, esp_http_client_get_content_length(cliente2));
+    local_response_buffer[read_len] = '\0';
 
-    // Analizar los datos JSON
-    cJSON *json = cJSON_Parse(buffer);
-    cJSON *messages = cJSON_GetObjectItem(json, "messages");
-    cJSON *publica_server = cJSON_GetObjectItem(json, "publica_server");
+cJSON *json = cJSON_Parse(local_response_buffer);
 
-    // Imprimir los valores obtenidos
-    if (messages) {
-        ESP_LOGI(TAG, "Messages: %s", cJSON_Print(messages));
+cJSON *messages = cJSON_GetObjectItem(json, "messages");
+cJSON *publica_server = cJSON_GetObjectItem(json, "publica_server");
+
+if (json == NULL) {
+    const char *error_ptr = cJSON_GetErrorPtr();
+    if (error_ptr != NULL) {
+        ESP_LOGE(TAG, "Error parsing JSON: %s", error_ptr);
     }
-    if (publica_server) {
-        ESP_LOGI(TAG, "Public Key: %s", cJSON_Print(publica_server));
+    // Mane
+}
+// Imprimir los valores obtenidos
+if (messages != NULL) {
+    char *messages_str = cJSON_Print(messages);
+    if (messages_str != NULL) {
+        ESP_LOGI(TAG, "Messages: %s", messages_str);
+        free(messages_str); // Liberar la memoria asignada por cJSON_Print
     }
+}
+if (publica_server != NULL) {
+    char *publica_server_str = cJSON_Print(publica_server);
+    if (publica_server_str != NULL) {
+        ESP_LOGI(TAG, "Public Key: %s", publica_server_str);
+        free(publica_server_str); // Liberar la memoria asignada por cJSON_Print
+    }
+}
 
-    // Liberar memoria
-    cJSON_Delete(json);
-    free(buffer);
+// Liberar la memoria asignada por cJSON_Parse
+cJSON_Delete(json);
 
+ 
 } else {
     ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
 }

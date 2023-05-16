@@ -1,22 +1,25 @@
 {
     "project_name":       "bootloader",
-    "project_path":       "C:/Users/ismae/esp/esp-idf/components/bootloader/subproject",
-    "build_dir":          "C:/Users/ismae/Desktop/esp_http_client/build/bootloader",
-    "config_file":        "C:/Users/ismae/Desktop/esp_http_client/sdkconfig",
+    "project_path":       "C:/Users/ismae/esp1/components/bootloader/subproject",
+    "build_dir":          "C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/bootloader",
+    "config_file":        "C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/sdkconfig",
     "config_defaults":    "",
+    "bootloader_elf":     "",
     "app_elf":            "bootloader.elf",
     "app_bin":            "bootloader.bin",
-    "git_revision":       "v5.0-dirty",
+    "git_revision":       "v5.0.2",
     "target":             "esp32",
     "rev":                "0",
+    "min_rev":            "0",
+    "max_rev":            "399",
     "phy_data_partition": "",
     "monitor_baud" :      "115200",
     "monitor_toolprefix": "xtensa-esp32-elf-",
     "config_environment" : {
-        "COMPONENT_KCONFIGS" : "C:/Users/ismae/esp/esp-idf/components/efuse/Kconfig;C:/Users/ismae/esp/esp-idf/components/esp_common/Kconfig;C:/Users/ismae/esp/esp-idf/components/esp_hw_support/Kconfig;C:/Users/ismae/esp/esp-idf/components/esp_system/Kconfig;C:/Users/ismae/esp/esp-idf/components/freertos/Kconfig;C:/Users/ismae/esp/esp-idf/components/hal/Kconfig;C:/Users/ismae/esp/esp-idf/components/log/Kconfig;C:/Users/ismae/esp/esp-idf/components/newlib/Kconfig;C:/Users/ismae/esp/esp-idf/components/spi_flash/Kconfig",
-        "COMPONENT_KCONFIGS_PROJBUILD" : "C:/Users/ismae/esp/esp-idf/components/bootloader/Kconfig.projbuild;C:/Users/ismae/esp/esp-idf/components/esp_app_format/Kconfig.projbuild;C:/Users/ismae/esp/esp-idf/components/esp_rom/Kconfig.projbuild;C:/Users/ismae/esp/esp-idf/components/esptool_py/Kconfig.projbuild;C:/Users/ismae/esp/esp-idf/components/partition_table/Kconfig.projbuild"
+        "COMPONENT_KCONFIGS" : "C:/Users/ismae/esp1/components/efuse/Kconfig;C:/Users/ismae/esp1/components/esp_common/Kconfig;C:/Users/ismae/esp1/components/esp_hw_support/Kconfig;C:/Users/ismae/esp1/components/esp_system/Kconfig;C:/Users/ismae/esp1/components/freertos/Kconfig;C:/Users/ismae/esp1/components/hal/Kconfig;C:/Users/ismae/esp1/components/log/Kconfig;C:/Users/ismae/esp1/components/newlib/Kconfig;C:/Users/ismae/esp1/components/soc/Kconfig;C:/Users/ismae/esp1/components/spi_flash/Kconfig",
+        "COMPONENT_KCONFIGS_PROJBUILD" : "C:/Users/ismae/esp1/components/bootloader/Kconfig.projbuild;C:/Users/ismae/esp1/components/esp_app_format/Kconfig.projbuild;C:/Users/ismae/esp1/components/esp_rom/Kconfig.projbuild;C:/Users/ismae/esp1/components/esptool_py/Kconfig.projbuild;C:/Users/ismae/esp1/components/partition_table/Kconfig.projbuild"
     },
     "build_components" : [ "bootloader", "bootloader_support", "efuse", "esp_app_format", "esp_common", "esp_hw_support", "esp_rom", "esp_system", "esptool_py", "freertos", "hal", "log", "main", "micro-ecc", "newlib", "partition_table", "soc", "spi_flash", "xtensa", "" ],
-    "build_component_paths" : [ "C:/Users/ismae/esp/esp-idf/components/bootloader", "C:/Users/ismae/esp/esp-idf/components/bootloader_support", "C:/Users/ismae/esp/esp-idf/components/efuse", "C:/Users/ismae/esp/esp-idf/components/esp_app_format", "C:/Users/ismae/esp/esp-idf/components/esp_common", "C:/Users/ismae/esp/esp-idf/components/esp_hw_support", "C:/Users/ismae/esp/esp-idf/components/esp_rom", "C:/Users/ismae/esp/esp-idf/components/esp_system", "C:/Users/ismae/esp/esp-idf/components/esptool_py", "C:/Users/ismae/esp/esp-idf/components/freertos", "C:/Users/ismae/esp/esp-idf/components/hal", "C:/Users/ismae/esp/esp-idf/components/log", "C:/Users/ismae/esp/esp-idf/components/bootloader/subproject/main", "C:/Users/ismae/esp/esp-idf/components/bootloader/subproject/components/micro-ecc", "C:/Users/ismae/esp/esp-idf/components/newlib", "C:/Users/ismae/esp/esp-idf/components/partition_table", "C:/Users/ismae/esp/esp-idf/components/soc", "C:/Users/ismae/esp/esp-idf/components/spi_flash", "C:/Users/ismae/esp/esp-idf/components/xtensa", "" ],
+    "build_component_paths" : [ "C:/Users/ismae/esp1/components/bootloader", "C:/Users/ismae/esp1/components/bootloader_support", "C:/Users/ismae/esp1/components/efuse", "C:/Users/ismae/esp1/components/esp_app_format", "C:/Users/ismae/esp1/components/esp_common", "C:/Users/ismae/esp1/components/esp_hw_support", "C:/Users/ismae/esp1/components/esp_rom", "C:/Users/ismae/esp1/components/esp_system", "C:/Users/ismae/esp1/components/esptool_py", "C:/Users/ismae/esp1/components/freertos", "C:/Users/ismae/esp1/components/hal", "C:/Users/ismae/esp1/components/log", "C:/Users/ismae/esp1/components/bootloader/subproject/main", "C:/Users/ismae/esp1/components/bootloader/subproject/components/micro-ecc", "C:/Users/ismae/esp1/components/newlib", "C:/Users/ismae/esp1/components/partition_table", "C:/Users/ismae/esp1/components/soc", "C:/Users/ismae/esp1/components/spi_flash", "C:/Users/ismae/esp1/components/xtensa", "" ],
     "debug_prefix_map_gdbinit": ""
 }

@@ -4,19 +4,19 @@
 cmake_minimum_required(VERSION 3.5)
 
 file(MAKE_DIRECTORY
-  "C:/Users/ismae/esp/esp-idf/components/bootloader/subproject"
-  "C:/Users/ismae/Desktop/esp_http_client/build/bootloader"
-  "C:/Users/ismae/Desktop/esp_http_client/build/bootloader-prefix"
-  "C:/Users/ismae/Desktop/esp_http_client/build/bootloader-prefix/tmp"
-  "C:/Users/ismae/Desktop/esp_http_client/build/bootloader-prefix/src/bootloader-stamp"
-  "C:/Users/ismae/Desktop/esp_http_client/build/bootloader-prefix/src"
-  "C:/Users/ismae/Desktop/esp_http_client/build/bootloader-prefix/src/bootloader-stamp"
+  "C:/Users/ismae/esp1/components/bootloader/subproject"
+  "C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/bootloader"
+  "C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/bootloader-prefix"
+  "C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/bootloader-prefix/tmp"
+  "C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/bootloader-prefix/src/bootloader-stamp"
+  "C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/bootloader-prefix/src"
+  "C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/bootloader-prefix/src/bootloader-stamp"
 )
 
 set(configSubDirs )
 foreach(subDir IN LISTS configSubDirs)
-    file(MAKE_DIRECTORY "C:/Users/ismae/Desktop/esp_http_client/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
+    file(MAKE_DIRECTORY "C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/bootloader-prefix/src/bootloader-stamp/${subDir}")
 endforeach()
 if(cfgdir)
-  file(MAKE_DIRECTORY "C:/Users/ismae/Desktop/esp_http_client/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
+  file(MAKE_DIRECTORY "C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/bootloader-prefix/src/bootloader-stamp${cfgdir}") # cfgdir has leading slash
 endif()

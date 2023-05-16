@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/ismae/esp/esp-idf/components/mbedtls/mbedtls
+# Install script for directory: C:/Users/ismae/esp1/components/mbedtls/mbedtls
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,9 +39,9 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("C:/Users/ismae/Desktop/esp_http_client/build/esp-idf/mbedtls/mbedtls/include/cmake_install.cmake")
-  include("C:/Users/ismae/Desktop/esp_http_client/build/esp-idf/mbedtls/mbedtls/3rdparty/cmake_install.cmake")
-  include("C:/Users/ismae/Desktop/esp_http_client/build/esp-idf/mbedtls/mbedtls/library/cmake_install.cmake")
+  include("C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/esp-idf/mbedtls/mbedtls/include/cmake_install.cmake")
+  include("C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/esp-idf/mbedtls/mbedtls/3rdparty/cmake_install.cmake")
+  include("C:/Users/ismae/Desktop/Esp32cliente/esp_http_client/build/esp-idf/mbedtls/mbedtls/library/cmake_install.cmake")
 
 endif()
 
