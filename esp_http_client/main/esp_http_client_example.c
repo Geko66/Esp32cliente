@@ -44,6 +44,107 @@ extern const char howsmyssl_com_root_cert_pem_end[] asm("_binary_howsmyssl_com_r
 
 extern const char postman_root_cert_pem_start[] asm("_binary_postman_root_cert_pem_start");
 extern const char postman_root_cert_pem_end[] asm("_binary_postman_root_cert_pem_end");
+void evaluar(psa_status_t estado){
+     if (estado==PSA_SUCCESS){
+        printf("PSA_SUCCESS1\n");
+       
+    }
+    else if(estado==PSA_ERROR_BAD_STATE){
+        printf("PSA_ERROR_BAD_STATE \n");
+    }
+
+      else if(estado==PSA_ERROR_NOT_PERMITTED){
+        printf("PSA_ERROR_NOT_PERMITTED \n");
+    }
+
+    else if(estado==PSA_ERROR_ALREADY_EXISTS){
+        printf("PSA_ERROR_ALREADY_EXISTS \n");
+    }
+
+    else if(estado==PSA_ERROR_INVALID_ARGUMENT){
+        printf("PSA_ERROR_INVALID_ARGUMENT \n");
+    }
+    else if(estado==PSA_ERROR_NOT_SUPPORTED){
+        printf("PSA_ERROR_NOT_SUPPORTED \n");
+    }
+    // export key
+    else  if (estado==PSA_SUCCESS){
+        printf("GENERAdo \n");
+    }
+    else if(estado==PSA_ERROR_BAD_STATE){
+        printf("Iniciar \n");
+    }
+    else if(estado==PSA_ERROR_INVALID_HANDLE){
+        printf("llave no valida \n");
+    }
+     else if(estado==PSA_ERROR_BUFFER_TOO_SMALL){
+        printf("buffer pequeño \n");
+    }
+    else if(estado==PSA_ERROR_INVALID_ARGUMENT){
+        printf("no clave par \n");
+    }
+else if(estado==PSA_ERROR_NOT_SUPPORTED){
+        printf("no soportado  \n");
+    }
+//Acuerdo de secreto
+    else if (estado==PSA_SUCCESS){
+        printf("GENERACION HECHA");
+    }
+    else if(estado==PSA_ERROR_BAD_STATE){
+        printf("iniciar  \n");
+    }
+    else if(estado==PSA_ERROR_INVALID_HANDLE){
+        printf("no valido \n");
+    }
+     else if(estado==PSA_ERROR_NOT_PERMITTED){
+        printf("PSA_ERROR_NOT_PERMITTED  \n");
+    }
+     else if(estado==PSA_ERROR_BUFFER_TOO_SMALL){
+        printf("PSA_ERROR_BUFFER_TOO_SMALL  \n");
+    }
+     else if(estado==PSA_ERROR_INVALID_ARGUMENT){
+        printf("PSA_ERROR_INVALID_ARGUMENT  \n");
+    }
+     else if(estado==PSA_ERROR_NOT_SUPPORTED){
+        printf("PSA_ERROR_NOT_SUPPORTED  \n");
+    }
+    //SETUP DERIVATION
+     else if(estado==PSA_ERROR_BAD_STATE){
+            printf("PSA_ERROR_BAD_STATE \n");
+        }
+        else if(estado==PSA_ERROR_INVALID_ARGUMENT){
+            printf("PSA_ERROR_INVALID_ARGUMENT \n");
+        }
+        else if(estado==PSA_ERROR_NOT_SUPPORTED){
+            printf("PSA_ERROR_NOT_SUPPORTED \n");
+        }
+        //DERIVADA
+       
+    
+    else if(estado==PSA_ERROR_BAD_STATE){
+        printf("PSA_ERROR_BAD_STATE");
+    }
+    else if(estado==PSA_ERROR_INVALID_HANDLE){
+        printf("PSA_ERROR_INVALID_HANDLE");
+    }
+        else if(estado==PSA_ERROR_NOT_PERMITTED){
+        printf("PSA_ERROR_NOT_PERMITTED");
+    }
+        else if(estado==PSA_ERROR_INVALID_ARGUMENT){
+        printf("PSA_ERROR_INVALID_ARGUMENT");
+    }
+        else if(estado==PSA_ERROR_NOT_SUPPORTED){
+        printf("=PSA_ERROR_NOT_SUPPORTED");
+    }
+        else if(estado==PSA_ERROR_DATA_INVALID){
+        printf("PSA_ERROR_DATA_INVALID");
+    }
+      else if(estado==PSA_ERROR_INSUFFICIENT_MEMORY){
+        printf("PSA_ERROR_DATA_INVALID");
+    }
+
+}
+
 
 esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 {
@@ -133,6 +234,33 @@ esp_err_t _http_event_handler(esp_http_client_event_t *evt)
 
 static void http_rest_with_url(void)
 {
+    psa_status_t estado;
+    estado = psa_crypto_init();
+     if(estado!=PSA_SUCCESS){
+        printf("ERROR");
+        }
+    psa_key_attributes_t attributes;
+    attributes = psa_key_attributes_init();
+    psa_set_key_usage_flags(&attributes,PSA_KEY_USAGE_DERIVE);
+    psa_set_key_lifetime(&attributes, PSA_KEY_LIFETIME_VOLATILE);
+    psa_set_key_algorithm(&attributes, PSA_ALG_ECDH);
+    psa_set_key_type(&attributes,PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
+    psa_set_key_bits(&attributes,256);
+    if (psa_get_key_usage_flags(&attributes)!=0)
+    {
+    printf("OK");
+    }
+    psa_key_handle_t llave_privada_bob;
+    uint8_t llave_publica_bob[65];
+    uint8_t compartidaB[33];
+    size_t olenB;
+    
+    estado=psa_generate_key(&attributes,&llave_privada_bob);
+    evaluar(estado);
+    estado= psa_export_public_key(llave_privada_bob,&llave_publica_bob,sizeof(llave_publica_bob),&olenB);
+    evaluar(estado);
+
+
     char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {0};
     /**
      * NOTE: All the configuration parameters for http_client must be spefied either in URL or as host and path parameters.
@@ -166,21 +294,42 @@ static void http_rest_with_url(void)
     ESP_LOG_BUFFER_HEX(TAG, local_response_buffer, strlen(local_response_buffer));
 
     // POST
-    /* esp_http_client_handle_t cliente = esp_http_client_init(&config);
-     const char *post_data = "{\"message\":\"value1\"}";
-     esp_http_client_set_url(cliente, "http://192.168.1.69:500/enviarMSG");
-     esp_http_client_set_method(cliente, HTTP_METHOD_POST);
-     esp_http_client_set_header(cliente, "X-Server-ID", "esp1");
-     esp_http_client_set_header(cliente, "Content-Type", "application/json");
-     esp_http_client_set_post_field(cliente, post_data, strlen(post_data));
-     err = esp_http_client_perform(cliente);
+
+
+     //esp_http_client_handle_t cliente = esp_http_client_init(&config);
+     //const char *post_data = "{\"message\":\"value1\"}";
+    char clave_publica_hex[130];// 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
+    char post_data[256]; 
+    for (int i = 0; i < sizeof(llave_publica_bob); i++) {
+    snprintf(clave_publica_hex + (2 * i), sizeof(clave_publica_hex) - (2 * i), "%02x", llave_publica_bob[i]);
+}   
+    printf("\n%s",clave_publica_hex);
+    cJSON *jsonObject = cJSON_CreateObject();
+    cJSON_AddStringToObject(jsonObject,"message", clave_publica_hex);
+    char *jsonData = cJSON_PrintUnformatted(jsonObject);
+    /*snprintf(post_data, sizeof(post_data), "{\"message\":\"%s\"}", clave_publica_hex);
+    printf("\n%s",post_data);
+*/
+
+
+     esp_http_client_set_url(client, "http://192.168.1.69:500/enviarMSG");
+     esp_http_client_set_method(client, HTTP_METHOD_POST);
+     esp_http_client_set_header(client, "X-Server-ID", "esp1");
+     esp_http_client_set_header(client, "Content-Type", "application/json");
+     //err=esp_http_client_set_post_field(client, clave_publica_hex, strlen(clave_publica_hex));
+     err=esp_http_client_set_post_field(client,jsonData,strlen(jsonData));
+     ESP_LOGE(TAG, " %s", esp_err_to_name(err));
+     err = esp_http_client_perform(client);
      if (err == ESP_OK) {
          ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %lld",
-                 esp_http_client_get_status_code(cliente),
-                 esp_http_client_get_content_length(cliente));
+                 esp_http_client_get_status_code(client),
+                 esp_http_client_get_content_length(client));
      } else {
          ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
-     }*/
+     }
+
+
+
     // GET mensajes
     esp_http_client_handle_t cliente = esp_http_client_init(&config);
     esp_http_client_set_url(cliente, "http://192.168.1.69:500/mensajes");
@@ -304,6 +453,131 @@ static void http_rest_with_url(void)
     {
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
     }
+//GET COMPARTIDA
+esp_http_client_handle_t cliente2 = esp_http_client_init(&config);
+    esp_http_client_set_url(cliente2, "http://192.168.1.69:500/compartida");
+    esp_http_client_set_header(cliente2, "X-Server-ID", "esp1");
+    // esp_http_client_set_header(client, "Content-Type", "application/json");
+    esp_http_client_set_method(cliente2, HTTP_METHOD_GET);
+    err = esp_http_client_perform(cliente2);
+    if (err == ESP_OK)
+    {
+        ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
+                 esp_http_client_get_status_code(cliente2),
+                 esp_http_client_get_content_length(cliente2));
+
+        // Leer los datos de la respuesta HTTP
+
+        int buffer_size = esp_http_client_get_content_length(cliente2) + 1;
+
+        // Leer los datos de la respuesta HTTP en fragmentos más pequeños
+        char *buffer = malloc(buffer_size);
+        int total_read_len = 0;
+        int read_len;
+        while ((read_len = esp_http_client_read(cliente2, buffer + total_read_len, buffer_size - total_read_len)) > 0)
+        {
+            total_read_len += read_len;
+
+            // Comprobar si se ha alcanzado el tamaño máximo del búfer
+            if (total_read_len == buffer_size)
+            {
+                // Aumentar el tamaño del búfer
+                buffer_size *= 2;
+                buffer = realloc(buffer, buffer_size);
+            }
+        }
+
+        // Asegurarse de que el búfer esté terminado con un carácter nulo
+        buffer[total_read_len] = '\0';
+        printf("%s", local_response_buffer);
+        cJSON *json = cJSON_Parse(local_response_buffer);
+
+        if (json == NULL)
+        {
+            const char *error_ptr = cJSON_GetErrorPtr();
+            if (error_ptr != NULL)
+            {
+                ESP_LOGE(TAG, "Error parsing JSON: %s", error_ptr);
+            }
+            // Manejar el error de análisis del JSON
+        }
+        else
+        {
+            cJSON *esp1 = cJSON_GetObjectItem(json, "esp1");
+            if (esp1 != NULL)
+            {
+                // cJSON *messages = cJSON_GetObjectItem(esp1, "messages");
+                cJSON *compartida = cJSON_GetObjectItem(esp1, "compartida");
+
+                /*if (messages != NULL)
+                {
+                    if (cJSON_IsArray(messages))
+                    {
+                        int messages_count = cJSON_GetArraySize(messages);
+                        for (int i = 0; i < messages_count; i++)
+                        {
+                            cJSON *message = cJSON_GetArrayItem(messages, i);
+                            if (cJSON_IsString(message))
+                            {
+                                const char *message_str = cJSON_GetStringValue(message);
+                                ESP_LOGI(TAG, "Message %d: %s", i + 1, message_str);
+                            }
+                        }
+                    }
+                }
+                else
+                    printf("\n hola3");
+*/
+                if (compartida != NULL)
+                {
+                    if (cJSON_IsArray(compartida))
+                    {
+                        const char *cla2 = cJSON_GetArrayItem(compartida, 0);
+                        if (cJSON_IsString(cla2))
+                        {
+                            const char *clavep2 = cJSON_GetStringValue(cla2);
+                            ESP_LOGI(TAG, "Public %s", clavep2);
+                            size_t hex_len2 = strlen(clavep2);
+                            size_t byte_len2= hex_len2 / 2;
+                            unsigned char *bytes2 = (unsigned char *)malloc(byte_len2);
+                            if (bytes2 == NULL)
+                            {
+                                printf("Error de asignación de memoria\n");
+                            }
+
+                            for (size_t i = 0; i < byte_len2; i++)
+                            {
+                                sscanf(clavep2 + (2 * i), "%2hhx", &bytes2[i]);
+                            }
+
+                            printf("Bytes: ");
+                            for (size_t i = 0; i < byte_len2; i++)
+                            {
+                                printf("%02x ", bytes2[i]);
+                            }
+                            printf("\n");
+
+                            free(bytes2);
+                        }
+
+                        else
+                            printf("\n hola fallo");
+                    }
+                }
+                else
+                    printf("\n hola4");
+
+                cJSON_Delete(json); // Liberar la memoria asignada por cJSON_Parse
+                free(buffer);
+            }
+        }
+    }
+    else
+    {
+        ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+    }
+
+
 
     /* esp_http_client_set_url(cliente, "http://192.168.1.219:500/mensajes");
      esp_http_client_set_method(cliente, HTTP_METHOD_GET);

@@ -1,0 +1,77 @@
+[1/9] Performing build step for 'bootloader'
+[1/1] cmd.exe /C "cd /D C:\Users\Ismael\Desktop\Esp32cliente\esp_http_client\build\bootloader\esp-idf\esptool_py && C:\Espressif\python_env\idf5.0_py3.11_env\Scripts\python.exe C:/Espressif/frameworks/esp-idf-v5.0.2/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/build/bootloader/bootloader.bin"
+Bootloader binary size 0x6710 bytes. 0x8f0 bytes (8%) free.
+[2/7] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/esp_http_client_example.c.obj
+C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c: In function 'http_rest_with_url':
+C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:260:53: warning: passing argument 2 of 'psa_export_public_key' from incompatible pointer type [-Wincompatible-pointer-types]
+  260 |     estado= psa_export_public_key(llave_privada_bob,&llave_publica_bob,sizeof(llave_publica_bob),&olenB);
+      |                                                     ^~~~~~~~~~~~~~~~~~
+      |                                                     |
+      |                                                     uint8_t (*)[65] {aka unsigned char (*)[65]}
+In file included from C:/Espressif/frameworks/esp-idf-v5.0.2/components/mbedtls/mbedtls/include/mbedtls/legacy_or_psa.h:104,
+                 from C:/Espressif/frameworks/esp-idf-v5.0.2/components/mbedtls/mbedtls/include/mbedtls/x509_crt.h:27,
+                 from C:/Espressif/frameworks/esp-idf-v5.0.2/components/mbedtls/mbedtls/include/mbedtls/ssl.h:35,
+                 from C:/Espressif/frameworks/esp-idf-v5.0.2/components/esp-tls/esp_tls.h:14,
+                 from C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:21:
+C:/Espressif/frameworks/esp-idf-v5.0.2/components/mbedtls/mbedtls/include/psa/crypto.h:818:45: note: expected 'uint8_t *' {aka 'unsigned char *'} but argument is of type 'uint8_t (*)[65]' {aka 'unsigned char (*)[65]'}
+  818 |                                    uint8_t *data,
+      |                                    ~~~~~~~~~^~~~
+C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:412:43: warning: initialization of 'const char *' from incompatible pointer type 'cJSON *' [-Wincompatible-pointer-types]
+  412 |                         const char *cla = cJSON_GetArrayItem(public_key_alice, 0);
+      |                                           ^~~~~~~~~~~~~~~~~~
+C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:413:44: warning: passing argument 1 of 'cJSON_IsString' from incompatible pointer type [-Wincompatible-pointer-types]
+  413 |                         if (cJSON_IsString(cla))
+      |                                            ^~~
+      |                                            |
+      |                                            const char *
+In file included from C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:14:
+C:/Espressif/frameworks/esp-idf-v5.0.2/components/json/cJSON/cJSON.h:189:61: note: expected 'const cJSON * const' but argument is of type 'const char *'
+  189 | CJSON_PUBLIC(cJSON_bool) cJSON_IsString(const cJSON * const item);
+      |                                         ~~~~~~~~~~~~~~~~~~~~^~~~
+C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:415:71: warning: passing argument 1 of 'cJSON_GetStringValue' from incompatible pointer type [-Wincompatible-pointer-types]
+  415 |                             const char *clavep = cJSON_GetStringValue(cla);
+      |                                                                       ^~~
+      |                                                                       |
+      |                                                                       const char *
+In file included from C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:14:
+C:/Espressif/frameworks/esp-idf-v5.0.2/components/json/cJSON/cJSON.h:179:63: note: expected 'const cJSON * const' but argument is of type 'const char *'
+  179 | CJSON_PUBLIC(char *) cJSON_GetStringValue(const cJSON * const item);
+      |                                           ~~~~~~~~~~~~~~~~~~~~^~~~
+C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:535:44: warning: initialization of 'const char *' from incompatible pointer type 'cJSON *' [-Wincompatible-pointer-types]
+  535 |                         const char *cla2 = cJSON_GetArrayItem(compartida, 0);
+      |                                            ^~~~~~~~~~~~~~~~~~
+C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:536:44: warning: passing argument 1 of 'cJSON_IsString' from incompatible pointer type [-Wincompatible-pointer-types]
+  536 |                         if (cJSON_IsString(cla2))
+      |                                            ^~~~
+      |                                            |
+      |                                            const char *
+In file included from C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:14:
+C:/Espressif/frameworks/esp-idf-v5.0.2/components/json/cJSON/cJSON.h:189:61: note: expected 'const cJSON * const' but argument is of type 'const char *'
+  189 | CJSON_PUBLIC(cJSON_bool) cJSON_IsString(const cJSON * const item);
+      |                                         ~~~~~~~~~~~~~~~~~~~~^~~~
+C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:538:72: warning: passing argument 1 of 'cJSON_GetStringValue' from incompatible pointer type [-Wincompatible-pointer-types]
+  538 |                             const char *clavep2 = cJSON_GetStringValue(cla2);
+      |                                                                        ^~~~
+      |                                                                        |
+      |                                                                        const char *
+In file included from C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:14:
+C:/Espressif/frameworks/esp-idf-v5.0.2/components/json/cJSON/cJSON.h:179:63: note: expected 'const cJSON * const' but argument is of type 'const char *'
+  179 | CJSON_PUBLIC(char *) cJSON_GetStringValue(const cJSON * const item);
+      |                                           ~~~~~~~~~~~~~~~~~~~~^~~~
+C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:302:10: warning: unused variable 'post_data' [-Wunused-variable]
+  302 |     char post_data[256];
+      |          ^~~~~~~~~
+C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/main/esp_http_client_example.c:255:13: warning: unused variable 'compartidaB' [-Wunused-variable]
+  255 |     uint8_t compartidaB[33];
+      |             ^~~~~~~~~~~
+[3/7] Linking C static library esp-idf\main\libmain.a
+[4/7] Generating ld/sections.ld
+[5/7] Linking CXX executable esp_http_client_example.elf
+[6/7] Generating binary image from built executable
+esptool.py v4.5.1
+Creating esp32 image...
+Merged 25 ELF sections
+Successfully created esp32 image.
+Generated C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/build/esp_http_client_example.bin
+[7/7] cmd.exe /C "cd /D C:\Users\Ismael\Desktop\Esp32cliente\esp_http_client\build\esp-idf\esptool_py && C:\Espressif\python_env\idf5.0_py3.11_env\Scripts\python.exe C:/Espressif/frameworks/esp-idf-v5.0.2/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/build/partition_table/partition-table.bin C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/build/esp_http_client_example.bin"
+esp_http_client_example.bin binary size 0xdccb0 bytes. Smallest app partition is 0x100000 bytes. 0x23350 bytes (14%) free.

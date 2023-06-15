@@ -1,8 +1,1 @@
-0000000000000000000000000000000000000000 b68da30fe3a5679215085dacf6941fffb49b2e99 Ismael <ismael.carrascol@alumnos.upm.es> 1683551732 +0200	clone: from git@github.com:Geko66/Esp32cliente.git
-b68da30fe3a5679215085dacf6941fffb49b2e99 7c78729ca24278a2f4442fad10941ca036ad0540 Ismael <ismael.carrascol@alumnos.upm.es> 1683552050 +0200	commit: Hola
-7c78729ca24278a2f4442fad10941ca036ad0540 253ea5d9bfb5d3bc731cbed270214bc2b8203b00 Ismael <ismael.carrascol@alumnos.upm.es> 1683558660 +0200	commit: 2
-253ea5d9bfb5d3bc731cbed270214bc2b8203b00 2b9370d30e5489483d3cc82872932b0e705f3cd2 Ismael <ismael.carrascol@alumnos.upm.es> 1683567850 +0200	commit: actualizacion
-2b9370d30e5489483d3cc82872932b0e705f3cd2 9b320d73245f66ebf78b5166c5c2444813c43ad4 Ismael <ismael.carrascol@alumnos.upm.es> 1683730373 +0200	pull: Fast-forward
-9b320d73245f66ebf78b5166c5c2444813c43ad4 44cfa3ebb5b61098b8a8ac003585285191b1fd56 Ismael <ismael.carrascol@alumnos.upm.es> 1683741987 +0200	commit: 2.1
-44cfa3ebb5b61098b8a8ac003585285191b1fd56 fd7a622f93504a0adf3345afdaea1e89bbc5a365 Ismael <ismael.carrascol@alumnos.upm.es> 1684264480 +0200	pull: Fast-forward
-fd7a622f93504a0adf3345afdaea1e89bbc5a365 87ef91c19815479338a278d6dafb080014a13390 Ismael <ismael.carrascol@alumnos.upm.es> 1684341690 +0200	commit: V4
+a23ce8b5f0a68e4ab923cf6db532d10685aafb0a
