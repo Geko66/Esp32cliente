@@ -239,7 +239,7 @@ static void http_rest_with_url(void)
      if(estado!=PSA_SUCCESS){
         printf("ERROR");
         }
-    psa_key_attributes_t attributes;
+    psa_key_attributes_t attributes,attributes2;
     attributes = psa_key_attributes_init();
     psa_set_key_usage_flags(&attributes,PSA_KEY_USAGE_DERIVE);
     psa_set_key_lifetime(&attributes, PSA_KEY_LIFETIME_VOLATILE);
@@ -331,12 +331,20 @@ static void http_rest_with_url(void)
 
 
     // GET mensajes
+    attributes2 = psa_key_attributes_init();
+    psa_set_key_usage_flags(&attributes2,PSA_KEY_USAGE_DERIVE | PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT);
+    psa_set_key_lifetime(&attributes2, PSA_KEY_LIFETIME_VOLATILE);
+    psa_set_key_algorithm(&attributes2, PSA_ALG_ECDH);
+    psa_set_key_type(&attributes2,PSA_KEY_TYPE_ECC_PUBLIC_KEY(PSA_ECC_FAMILY_SECP_R1));
+    psa_set_key_bits(&attributes2,256);
+    
     esp_http_client_handle_t cliente = esp_http_client_init(&config);
     esp_http_client_set_url(cliente, "http://192.168.1.69:500/mensajes");
     esp_http_client_set_header(cliente, "X-Server-ID", "esp1");
     // esp_http_client_set_header(client, "Content-Type", "application/json");
     esp_http_client_set_method(cliente, HTTP_METHOD_GET);
     err = esp_http_client_perform(cliente);
+    
     if (err == ESP_OK)
     {
         ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
@@ -413,10 +421,12 @@ static void http_rest_with_url(void)
                         if (cJSON_IsString(cla))
                         {
                             const char *clavep = cJSON_GetStringValue(cla);
+                            psa_key_handle_t key;
                             ESP_LOGI(TAG, "Public %s", clavep);
                             size_t hex_len = strlen(clavep);
                             size_t byte_len = hex_len / 2;
                             unsigned char *bytes = (unsigned char *)malloc(byte_len);
+                            uint8_t *datos = (uint8_t *)clavep;
                             if (bytes == NULL)
                             {
                                 printf("Error de asignación de memoria\n");
@@ -426,14 +436,21 @@ static void http_rest_with_url(void)
                             {
                                 sscanf(clavep + (2 * i), "%2hhx", &bytes[i]);
                             }
-
+                            
                             printf("Bytes: ");
                             for (size_t i = 0; i < byte_len; i++)
                             {
                                 printf("%02x ", bytes[i]);
                             }
                             printf("\n");
-
+                            
+                            estado = psa_import_key(&attributes2,&datos,byte_len,&key);
+                            if (key==PSA_KEY_ID_NULL )
+                            {
+                                ESP_LOGE(TAG, "ERROR");
+                            }
+                            
+                            evaluar(estado);
                             free(bytes);
                         }
 
