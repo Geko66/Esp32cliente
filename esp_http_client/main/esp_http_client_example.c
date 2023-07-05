@@ -19,6 +19,12 @@
 #include "esp_netif.h"
 #include "protocol_examples_common.h"
 #include "esp_tls.h"
+#include "esp_tls_crypto.h"
+#include <esp_http_server.h>
+#include <psa/crypto.h>
+#include <psa/crypto_values.h>
+#include <psa/crypto_builtin_primitives.h>
+#include <mbedtls/ecdh.h>
 #if CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
 #include "esp_crt_bundle.h"
 #endif
@@ -299,8 +305,7 @@ static void http_rest_with_url(void)
     {
         printf("ERROR");
     }
-    psa_key_derivation_operation_t operacion;
-    operacion = psa_key_derivation_operation_init();
+    
     psa_key_attributes_t attributes, attributes2, attributes3;
     attributes = psa_key_attributes_init();
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_DERIVE);
@@ -330,7 +335,7 @@ static void http_rest_with_url(void)
     uint32_t output_lenB;
     int j = 0;
     int i = 0;
-    int resultado=0;
+    int value = 99;
     estado = psa_generate_key(&attributes, &llave_privada_bob);
     evaluar(estado);
     estado = psa_export_public_key(llave_privada_bob, &llave_publica_bob, sizeof(llave_publica_bob), &olenB);
@@ -615,9 +620,51 @@ static void http_rest_with_url(void)
     {
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
     }
-    // GET COMPARTIDA
+    // POST Compartida
+
+    // esp_http_client_handle_t cliente = esp_http_client_init(&config);
+    // const char *post_data = "{\"message\":\"value1\"}";
+    char clave_publica_hex2[135]; // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
+    char post_data2[256];
+    for (int i = 0; i < sizeof(compartidaB); i++)
+    {
+        snprintf(clave_publica_hex2 + (2 * i), sizeof(clave_publica_hex2) - (2 * i), "%02x", compartidaB[i]);
+    }
+    for (int i = 0; i < sizeof(compartidaB); i++)
+    {
+        printf("%d", compartidaB[i]);
+    }
+    printf("\n");
+    printf("\n%s", clave_publica_hex2);
+    cJSON *jsonObject2 = cJSON_CreateObject();
+    cJSON_AddStringToObject(jsonObject2, "compartidaB", clave_publica_hex2);
+    char *jsonData2 = cJSON_PrintUnformatted(jsonObject2);
+    /*snprintf(post_data, sizeof(post_data), "{\"message\":\"%s\"}", clave_publica_hex);
+    printf("\n%s",post_data);
+*/
+
+    esp_http_client_set_url(client, "http://192.168.1.69:500/compartida");
+    esp_http_client_set_method(client, HTTP_METHOD_POST);
+    esp_http_client_set_header(client, "X-Server-ID", "esp1");
+    esp_http_client_set_header(client, "Content-Type", "application/json");
+    // err=esp_http_client_set_post_field(client, clave_publica_hex, strlen(clave_publica_hex));
+    err = esp_http_client_set_post_field(client, jsonData2, strlen(jsonData2));
+    ESP_LOGE(TAG, " %s", esp_err_to_name(err));
+    err = esp_http_client_perform(client);
+    if (err == ESP_OK)
+    {
+        ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %lld",
+                 esp_http_client_get_status_code(client),
+                 esp_http_client_get_content_length(client));
+    }
+    else
+    {
+        ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
+    }
+    
+    // GET veryfy
     esp_http_client_handle_t cliente2 = esp_http_client_init(&config);
-    esp_http_client_set_url(cliente2, "http://192.168.1.69:500/compartida");
+    esp_http_client_set_url(cliente2, "http://192.168.1.69:500/verificacion");
     esp_http_client_set_header(cliente2, "X-Server-ID", "esp1");
     // esp_http_client_set_header(client, "Content-Type", "application/json");
     esp_http_client_set_method(cliente2, HTTP_METHOD_GET);
@@ -671,181 +718,85 @@ static void http_rest_with_url(void)
             if (esp1 != NULL)
             {
                 // cJSON *messages = cJSON_GetObjectItem(esp1, "messages");
-                cJSON *compartida = cJSON_GetObjectItem(esp1, "compartida");
-
-                /*if (messages != NULL)
+                cJSON *valor = cJSON_GetObjectItem(esp1, "valor");
+                if (valor != NULL)
                 {
-                    if (cJSON_IsArray(messages))
+                    if (cJSON_IsNumber(valor))
                     {
-                        int messages_count = cJSON_GetArraySize(messages);
-                        for (int i = 0; i < messages_count; i++)
+                       value = cJSON_GetNumberValue(valor);
+                        if (value==0)
                         {
-                            cJSON *message = cJSON_GetArrayItem(messages, i);
-                            if (cJSON_IsString(message))
-                            {
-                                const char *message_str = cJSON_GetStringValue(message);
-                                ESP_LOGI(TAG, "Message %d: %s", i + 1, message_str);
-                            }
+                            ESP_LOGI(TAG,"LOGRADO");
                         }
+                        else{
+                            ESP_LOGE(TAG,"ERRORRRRRR");
+                        }
+                        
                     }
-                }
-                else
-                    printf("\n hola3");
-*/
-                if (compartida != NULL)
-                {
-                    printf("Aqui me meto1");
-                    if (cJSON_IsString(compartida))
-                    {
-                        const char *clavep2 = cJSON_GetStringValue(compartida);
-                        ESP_LOGI(TAG, "Public %s", clavep2);
-                        size_t hex_len2 = strlen(clavep2);
-                        size_t byte_len2 = hex_len2 / 2;
-                        unsigned char *bytes2 = (unsigned char *)malloc(byte_len2);
-                        if (bytes2 == NULL)
-                        {
-                            printf("Error de asignación de memoria\n");
-                        }
-
-                        for (size_t i = 0; i < byte_len2; i++)
-                        {
-                            sscanf(clavep2 + (2 * i), "%2hhx", &bytes2[i]);
-                        }
-
-                        printf("Bytes Compartida Server: ");
-                        for (size_t i = 0; i < byte_len2; i++)
-                        {
-                            printf("%02x ", bytes2[i]);
-                        }
-                        printf("\n");
-
-                        for (i = 0; i < sizeof(cadena5); i++)
-                        {
-                            sprintf(cadena5 + (i * 2), "%02x", bytes2[i]);
-                            bytesesp1[i] = bytes2[i];
-                        }
-                        printf("Cadena 5 :%s", cadena5);
-                        printf("\n");
-                        for (i = 0; i < sizeof(cadena4); i++)
-                        {
-                            // sprintf(cadena4 + (i * 2), "%02x", bytesesp[i]);
-                            sprintf(cadena4 + (i * 2), "%02x", compartidaB[i]);
-                            
-                            
-                        }
-                        printf("Cadena 4 :%s", cadena4);/*
-                        for ( i = 1; i <= sizeof(cadena4); i++)
-                        {
-                            if(cadena4[i]!=cadena5[i]){
-                                resultado=5;
-                            }
-                        }*/i=0;
-                        while (cadena4[i]==cadena5[i] )
-                        {
-                            i++;
-                        }
-                        printf("\n");
-                        i=0;
-                        printf("%c",cadena5[i]);
-                        printf("\n");
-                        printf("%c",cadena4[i]);
-                        printf("\n");
-                        printf("%d",i);
-                        printf("\n");
-                        printf("%d",resultado);
-                        printf("\n");
-
-                        free(bytes2);
+                    else{
+                        ESP_LOGE(TAG,"ERRORRRRRR2");
                     }
-
-                    else
-                        printf("\n hola fallo2");
+                    
                 }
-                else
-                    printf("\n hola4");
-
-                cJSON_Delete(json); // Liberar la memoria asignada por cJSON_Parse
-                free(buffer);
+                else{
+                        ESP_LOGE(TAG,"ERRORRRRRR3");
+                    }
             }
+            else{
+                        ESP_LOGE(TAG,"ERRORRRRRR3");
+                    }
         }
+    //POST DERIVADA
+    psa_key_derivation_operation_t operacion;
+    operacion = psa_key_derivation_operation_init();
+    estado= psa_key_derivation_setup(&operacion,PSA_ALG_KEY_AGREEMENT(PSA_ALG_ECDH,PSA_ALG_HKDF(PSA_ALG_SHA_256)));
+    
+    evaluar(estado);
+
+    estado=psa_key_derivation_key_agreement(&operacion,PSA_KEY_DERIVATION_INPUT_SECRET,llave_privada_bob,&llave_alice,sizeof(llave_alice));
+    evaluar(estado);
+    estado=psa_key_derivation_set_capacity(&operacion,256);
+    evaluar(estado);
+    estado=psa_key_derivation_input_bytes(&operacion,PSA_KEY_DERIVATION_INPUT_INFO,compartidaB,sizeof(compartidaB));
+    evaluar(estado);
+/*
+    char clave_publica_hex3[135]; // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
+    char post_data3[256];
+    for (int i = 0; i < sizeof(compartidaB); i++)
+    {
+        snprintf(clave_publica_hex2 + (2 * i), sizeof(clave_publica_hex2) - (2 * i), "%02x", compartidaB[i]);
+    }
+    for (int i = 0; i < sizeof(compartidaB); i++)
+    {
+        printf("%d", compartidaB[i]);
+    }
+    printf("\n");
+    printf("\n%s", clave_publica_hex3);
+    cJSON *jsonObject3 = cJSON_CreateObject();
+    cJSON_AddStringToObject(jsonObject3, "compartidaB", clave_publica_hex2);
+    char *jsonData3 = cJSON_PrintUnformatted(jsonObject2);
+    
+    
+  
+    esp_http_client_set_url(client, "http://192.168.1.69:500/derivada");
+    esp_http_client_set_method(client, HTTP_METHOD_POST);
+    esp_http_client_set_header(client, "X-Server-ID", "esp1");
+    esp_http_client_set_header(client, "Content-Type", "application/json");
+    // err=esp_http_client_set_post_field(client, clave_publica_hex, strlen(clave_publica_hex));
+    err = esp_http_client_set_post_field(client, jsonData2, strlen(jsonData2));
+    ESP_LOGE(TAG, " %s", esp_err_to_name(err));
+    err = esp_http_client_perform(client);
+    if (err == ESP_OK)
+    {
+        ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %lld",
+                 esp_http_client_get_status_code(client),
+                 esp_http_client_get_content_length(client));
     }
     else
     {
-        ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
-    }
-   if (resultado==0)
-   {
-    ESP_LOGI(TAG,"LOGRADO");
-   }
-   else{
-    ESP_LOGE(TAG,"ERRORRRRRRRR");
-   }
-   
-    /* esp_http_client_set_url(cliente, "http://192.168.1.219:500/mensajes");
-     esp_http_client_set_method(cliente, HTTP_METHOD_GET);
-     err = esp_http_client_perform(client);
-     if (err == ESP_OK) {
-         ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
-                 esp_http_client_get_status_code(client),
-                 esp_http_client_get_content_length(client));
-     } else {
-         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
-     }
-     ESP_LOG_BUFFER_HEX(TAG, local_response_buffer, strlen(local_response_buffer));
-     */
-    /*
-        //PUT
-        esp_http_client_set_url(client, "http://httpbin.org/put");
-        esp_http_client_set_method(client, HTTP_METHOD_PUT);
-        err = esp_http_client_perform(client);
-        if (err == ESP_OK) {
-            ESP_LOGI(TAG, "HTTP PUT Status = %d, content_length = %lld",
-                    esp_http_client_get_status_code(client),
-                    esp_http_client_get_content_length(client));
-        } else {
-            ESP_LOGE(TAG, "HTTP PUT request failed: %s", esp_err_to_name(err));
-        }
-
-        //PATCH
-        esp_http_client_set_url(client, "http://httpbin.org/patch");
-        esp_http_client_set_method(client, HTTP_METHOD_PATCH);
-        esp_http_client_set_post_field(client, NULL, 0);
-        err = esp_http_client_perform(client);
-        if (err == ESP_OK) {
-            ESP_LOGI(TAG, "HTTP PATCH Status = %d, content_length = %lld",
-                    esp_http_client_get_status_code(client),
-                    esp_http_client_get_content_length(client));
-        } else {
-            ESP_LOGE(TAG, "HTTP PATCH request failed: %s", esp_err_to_name(err));
-        }
-
-        //DELETE
-        esp_http_client_set_url(client, "http://httpbin.org/delete");
-        esp_http_client_set_method(client, HTTP_METHOD_DELETE);
-        err = esp_http_client_perform(client);
-        if (err == ESP_OK) {
-            ESP_LOGI(TAG, "HTTP DELETE Status = %d, content_length = %lld",
-                    esp_http_client_get_status_code(client),
-                    esp_http_client_get_content_length(client));
-        } else {
-            ESP_LOGE(TAG, "HTTP DELETE request failed: %s", esp_err_to_name(err));
-        }
-
-        //HEAD
-        esp_http_client_set_url(client, "http://httpbin.org/get");
-        esp_http_client_set_method(client, HTTP_METHOD_HEAD);
-        err = esp_http_client_perform(client);
-        if (err == ESP_OK) {
-            ESP_LOGI(TAG, "HTTP HEAD Status = %d, content_length = %lld",
-                    esp_http_client_get_status_code(client),
-                    esp_http_client_get_content_length(client));
-        } else {
-            ESP_LOGE(TAG, "HTTP HEAD request failed: %s", esp_err_to_name(err));
-        }
-
-        esp_http_client_cleanup(client);
-    }
-    */
+        ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
+    }*/
+}
 }
 static void http_test_task(void *pvParameters)
 {

@@ -27,7 +27,7 @@
 -- Found Python3: C:/Espressif/python_env/idf5.0_py3.11_env/Scripts/python.exe (found version "3.11.2") found components: Interpreter 
 -- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS
 -- Performing Test C_COMPILER_SUPPORTS_WFORMAT_SIGNEDNESS - Success
--- App "esp_http_client_example" version: a72e255-dirty
+-- App "esp_http_client_example" version: 9e71d5d-dirty
 -- Adding linker script C:/Users/Ismael/Desktop/Esp32cliente/esp_http_client/build/esp-idf/esp_system/ld/memory.ld
 -- Adding linker script C:/Espressif/frameworks/esp-idf-v5.0.2/components/esp_system/ld/esp32/sections.ld.in
 -- Adding linker script C:/Espressif/frameworks/esp-idf-v5.0.2/components/esp_rom/esp32/ld/esp32.rom.ld
