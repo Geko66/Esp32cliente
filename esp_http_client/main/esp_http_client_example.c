@@ -306,13 +306,15 @@ static void http_rest_with_url(void)
         printf("ERROR");
     }
     
-    psa_key_attributes_t attributes, attributes2, attributes3;
+    psa_key_attributes_t attributes, attributes2,attributes3,atributo3;
     attributes = psa_key_attributes_init();
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_DERIVE);
     psa_set_key_lifetime(&attributes, PSA_KEY_LIFETIME_VOLATILE);
     psa_set_key_algorithm(&attributes, PSA_ALG_ECDH);
     psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
     psa_set_key_bits(&attributes, 256);
+
+
 
     if (psa_get_key_usage_flags(&attributes) != 0)
     {
@@ -325,17 +327,19 @@ static void http_rest_with_url(void)
     char cadena4[32];
     char cadena5[32];
 
-    psa_key_handle_t llave_privada_bob, key;
+    psa_key_handle_t llave_privada_bob, key,llave_derivada;
     uint8_t llave_publica_bob[65];
     uint8_t llave_alice[65];
     uint8_t compartidaB[32];
     uint8_t bytesesp[32];
     uint8_t bytesesp1[32];
+     uint8_t llave_derivadaB[32];
     size_t olenB, olenA;
     uint32_t output_lenB;
     int j = 0;
     int i = 0;
     int value = 99;
+    uint64_t vuelta=0;
     estado = psa_generate_key(&attributes, &llave_privada_bob);
     evaluar(estado);
     estado = psa_export_public_key(llave_privada_bob, &llave_publica_bob, sizeof(llave_publica_bob), &olenB);
@@ -425,7 +429,7 @@ static void http_rest_with_url(void)
     }
 
     // GET mensajes
-    attributes2 = psa_key_attributes_init();
+    /*attributes2 = psa_key_attributes_init();
     psa_set_key_usage_flags(&attributes2, PSA_KEY_USAGE_DERIVE | PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT);
     psa_set_key_lifetime(&attributes2, PSA_KEY_LIFETIME_VOLATILE);
     psa_set_key_algorithm(&attributes2, PSA_ALG_ECDH);
@@ -441,7 +445,7 @@ static void http_rest_with_url(void)
     {
         printf("OK");
     }
-
+*/
     esp_http_client_handle_t cliente = esp_http_client_init(&config);
     esp_http_client_set_url(cliente, "http://192.168.1.69:500/mensajes");
     esp_http_client_set_header(cliente, "X-Server-ID", "esp1");
@@ -752,12 +756,26 @@ static void http_rest_with_url(void)
     estado= psa_key_derivation_setup(&operacion,PSA_ALG_KEY_AGREEMENT(PSA_ALG_ECDH,PSA_ALG_HKDF(PSA_ALG_SHA_256)));
     
     evaluar(estado);
-
+    estado=psa_key_derivation_input_bytes(&operacion,PSA_KEY_DERIVATION_INPUT_SALT,&vuelta,sizeof(vuelta));
+   // estado = psa_key_derivation_input_integer(&operacion,PSA_KEY_DERIVATION_INPUT_SALT,vuelta);
+    evaluar(estado);
+    vuelta++;
     estado=psa_key_derivation_key_agreement(&operacion,PSA_KEY_DERIVATION_INPUT_SECRET,llave_privada_bob,&llave_alice,sizeof(llave_alice));
     evaluar(estado);
     estado=psa_key_derivation_set_capacity(&operacion,256);
     evaluar(estado);
     estado=psa_key_derivation_input_bytes(&operacion,PSA_KEY_DERIVATION_INPUT_INFO,compartidaB,sizeof(compartidaB));
+    evaluar(estado);
+
+    psa_set_key_usage_flags(&atributo3,PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT); 
+    psa_set_key_lifetime(&atributo3, PSA_KEY_LIFETIME_VOLATILE);
+    psa_set_key_algorithm(&atributo3,PSA_ALG_CTR);
+    psa_set_key_type(&atributo3,PSA_KEY_TYPE_AES);
+    psa_set_key_bits(&atributo3,256);
+    printf("break \n" );
+    estado=psa_key_derivation_output_key(&atributo3,&operacion,&llave_derivada);
+    evaluar(estado); 
+    estado=psa_key_derivation_output_bytes(&operacion,&llave_derivadaB,sizeof(llave_derivadaB));
     evaluar(estado);
 /*
     char clave_publica_hex3[135]; // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
