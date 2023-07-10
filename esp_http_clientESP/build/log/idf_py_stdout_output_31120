@@ -1,0 +1,5 @@
+[1/4] cmd.exe /C "cd /D C:\Users\Ismael\Desktop\Esp32cliente\esp_http_clientESP\build\esp-idf\esptool_py && C:\Users\Ismael\.espressif\python_env\idf5.0_py3.8_env\Scripts\python.exe C:/Users/Ismael/esp/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/Users/Ismael/Desktop/Esp32cliente/esp_http_clientESP/build/partition_table/partition-table.bin C:/Users/Ismael/Desktop/Esp32cliente/esp_http_clientESP/build/esp_http_client_example.bin"
+esp_http_client_example.bin binary size 0xde4e0 bytes. Smallest app partition is 0x100000 bytes. 0x21b20 bytes (13%) free.
+[2/4] Performing build step for 'bootloader'
+[1/1] cmd.exe /C "cd /D C:\Users\Ismael\Desktop\Esp32cliente\esp_http_clientESP\build\bootloader\esp-idf\esptool_py && C:\Users\Ismael\.espressif\python_env\idf5.0_py3.8_env\Scripts\python.exe C:/Users/Ismael/esp/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 C:/Users/Ismael/Desktop/Esp32cliente/esp_http_clientESP/build/bootloader/bootloader.bin"
+Bootloader binary size 0x6710 bytes. 0x8f0 bytes (8%) free.
