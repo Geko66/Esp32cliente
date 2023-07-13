@@ -199,6 +199,93 @@ unsigned char hexToByte(const char *hex)
     return byte;
 }
 
+uint8_t* calculateHash(const char* input) {
+    size_t inputLength = strlen(input); // Longitud de los datos de entrada
+    uint8_t hash[PSA_HASH_MAX_SIZE]; // Buffer para almacenar el hash resultante // Buffer para almacenar el hash resultante
+    size_t hashLength; // Variable para almacenar la longitud del hash resultante
+
+    // Calcular el hash utilizando el algoritmo deseado
+    psa_algorithm_t algorithm = PSA_ALG_SHA_256; // Ejemplo con el algoritmo SHA-256
+    
+
+    
+        // Reservar memoria para el buffer del hash
+        
+        
+
+        // Calcular el hash nuevamente para obtener el resultado
+        psa_status_t status = psa_hash_compute(algorithm, (const uint8_t*)input, inputLength, hash, sizeof(hash), &hashLength);
+        if (status != PSA_SUCCESS) {
+            // Error al calcular el hash
+            printf("Error al calcular el hash1: \n");
+            free(hash);
+            return NULL;
+        }
+    
+
+    return hash;
+}
+
+char* generar_hash(const uint8_t* clave, size_t clave_len, const uint8_t* info, size_t info_len, const uint8_t* salt, size_t salt_len) {
+    // Crear el contexto MD de mbedtls
+    mbedtls_md_context_t ctx;
+    mbedtls_md_init(&ctx);
+
+    // Configurar el hash SHA256
+    const mbedtls_md_info_t* md_info = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
+    mbedtls_md_setup(&ctx, md_info, 0);
+
+
+    size_t total_len = clave_len + info_len + salt_len;
+
+    // Crear un búfer temporal para almacenar la concatenación
+    uint8_t* concat_data = malloc(total_len);
+    memcpy(concat_data, clave, clave_len);
+    memcpy(concat_data + clave_len, info, info_len);
+    memcpy(concat_data + clave_len + info_len, salt, salt_len);
+
+    // Actualizar el hash con los datos concatenados
+    mbedtls_md_starts(&ctx);
+    mbedtls_md_update(&ctx, concat_data, total_len);
+    // Actualizar el hash con los datos a hashear
+    /*mbedtls_md_starts(&ctx);
+    mbedtls_md_update(&ctx, clave, clave_len);
+    
+    mbedtls_md_update(&ctx, info, info_len);
+    mbedtls_md_update(&ctx, salt, salt_len);*/
+
+    // Obtener el hash resultante
+    uint8_t hash_resultante[32];
+    mbedtls_md_finish(&ctx, hash_resultante);
+
+    // Crear una cadena de caracteres hexadecimal para almacenar el hash
+    char* hash_hex = malloc(65); // 32 bytes (256 bits) + 1 byte para el terminador nulo
+
+    // Convertir el hash resultante a una cadena de caracteres hexadecimal
+    for (int i = 0; i < mbedtls_md_get_size(md_info); i++) {
+        sprintf(&hash_hex[i * 2], "%02x", hash_resultante[i]);
+    }
+
+    // Limpiar y liberar recursos
+    mbedtls_md_free(&ctx);
+
+    return hash_hex;
+}
+
+void convertirStringAByteArray(const char* str, uint8_t* byteArray, size_t maxLength)
+{
+    size_t strLength = strlen(str);
+    size_t copyLength = strLength < maxLength ? strLength : maxLength;
+    memcpy(byteArray, str, copyLength);
+}
+
+
+void convertirCadenaABytes(const char* cadena, uint8_t* arregloBytes, size_t longitud)
+{
+    // Copia los datos de la cadena al arreglo de bytes
+    memcpy(arregloBytes, cadena, longitud);
+}
+
 void hexToBytes(const char *hex, unsigned char *bytes, size_t num_bytes)
 {
     size_t hex_len = strlen(hex);
@@ -313,7 +400,7 @@ static void http_rest_with_url(void)
         printf("ERROR");
     }
 
-    psa_key_attributes_t attributes, atributo3;
+    psa_key_attributes_t attributes, atributo3,atributo;
     attributes = psa_key_attributes_init();
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_DERIVE);
     psa_set_key_lifetime(&attributes, PSA_KEY_LIFETIME_VOLATILE);
@@ -322,11 +409,13 @@ static void http_rest_with_url(void)
     psa_set_key_bits(&attributes, 256);
 
     atributo3 = psa_key_attributes_init();
-    psa_set_key_usage_flags(&atributo3, PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT);
+    psa_set_key_usage_flags(&atributo3, PSA_KEY_USAGE_ENCRYPT | PSA_KEY_USAGE_DECRYPT |PSA_KEY_USAGE_DERIVE);
     psa_set_key_lifetime(&atributo3, PSA_KEY_LIFETIME_VOLATILE);
     psa_set_key_algorithm(&atributo3, PSA_ALG_CTR);
     psa_set_key_type(&atributo3, PSA_KEY_TYPE_AES);
     psa_set_key_bits(&atributo3, 256);
+
+    
 
     if (psa_get_key_usage_flags(&attributes) != 0)
     {
@@ -341,7 +430,8 @@ static void http_rest_with_url(void)
 
     psa_key_handle_t llave_privada_bob, key, llave_derivada, llave_aes;
     uint8_t llave_publica_bob[65];
-    uint8_t llave_aesB[33] uint8_t llave_alice[65];
+    uint8_t llave_aesB[33];
+    uint8_t llave_alice[65];
     uint8_t compartidaB[32];
     uint8_t bytesesp[32];
     uint8_t bytesesp1[32];
@@ -656,7 +746,7 @@ static void http_rest_with_url(void)
         printf("%d", compartidaB[i]);
     }
     printf("\n");
-    printf("\n%s", clave_publica_hex2);
+    printf("\nCOMPARTIDA ;%s", clave_publica_hex2);
     cJSON *jsonObject2 = cJSON_CreateObject();
     cJSON_AddStringToObject(jsonObject2, "compartidaB", clave_publica_hex2);
     char *jsonData2 = cJSON_PrintUnformatted(jsonObject2);
@@ -769,274 +859,409 @@ static void http_rest_with_url(void)
                 ESP_LOGE(TAG, "ERRORRRRRR3");
             }
         }
-        // POST DERIVADA
-        psa_key_derivation_operation_t operacion;
-        operacion = psa_key_derivation_operation_init();
-        uint8_t vuelta = 0;
-        uint8_t bytes[4];
-        intToBytes(vuelta, bytes);
-        for (int t = 0; t < sizeof(bytes); t++)
+    }
+    // POST DERIVADA
+    psa_key_derivation_operation_t operacion;
+    operacion = psa_key_derivation_operation_init();
+    uint8_t vuelta = 0;
+    char * lol="aaaa";
+    uint8_t* bytes=(uint8_t*)lol;
+    const char* cadena = "isma_crypto_send";
+    int len =strlen(cadena);
+    int len2=strlen(lol);
+    printf("%d",len);
+    printf("\n");
+    //len=len*2;
+    //printf("%d",len);
+    uint8_t bufff[len];
+    uint8_t bufff2[len2];
+    printf("%d",sizeof(bufff));
+    printf("\n");
+    /*while (cadena[i]!='\0')
+    {
+        bufff[i]=(uint8_t)cadena[i];
+        printf("%d",bufff[i]);
+    }
+    printf("\n");*/
+    
+    for (size_t i = 0; i < len; i++)
+    {
+        bufff[i]=(uint8_t)cadena[i];
+        printf("%02x",bufff[i]);
+    }
+    printf("\n");
+    for (size_t i = 0; i < len2; i++)
+    {
+        bufff2[i]=(uint8_t)lol[i];
+        printf("%02x",bufff2[i]);
+    }  
+    
+    
+    
+    const uint8_t arregloBytes[50];
+    uint8_t myArray[32] = {0};
+    uint8_t hashes[50];
+    uint8_t olen_lenV;
+    psa_key_handle_t comp,comp2;
+    const uint8_t* input = (const uint8_t*)"HOLA";
+
+    printf("\n");
+    printf("\n");
+    printf("\n");
+    printf("\n");
+    printf("Bytes; ");
+    for (size_t i = 0; i < sizeof(bytes); i++)
+    {
+        printf("%02x",bytes[i]);
+    }
+    printf("\n");
+    printf("INPUT; ");
+    for (size_t i = 0; i < sizeof(bytes); i++)
+    {
+        printf("%02x",input[i]);
+    }
+    printf("\n");
+    printf("Compartida; ");
+    for (size_t i = 0; i < sizeof(compartidaB); i++)
+    {
+        printf("%02x",compartidaB[i]);
+    }
+    printf("\n");
+    estado = psa_import_key(&atributo3, compartidaB, sizeof(compartidaB), &comp);
+    evaluar(estado);
+    estado = psa_key_derivation_setup(&operacion,  PSA_ALG_HKDF(PSA_ALG_SHA_256));
+
+    evaluar(estado);
+    estado = psa_key_derivation_input_bytes(&operacion, PSA_KEY_DERIVATION_INPUT_SALT, bufff2, sizeof(bufff2));
+    
+    evaluar(estado);
+   
+    estado=psa_key_derivation_input_bytes(&operacion,PSA_KEY_DERIVATION_INPUT_SECRET,compartidaB,sizeof(compartidaB));
+    evaluar(estado);
+    
+    estado = psa_key_derivation_input_bytes(&operacion, PSA_KEY_DERIVATION_INPUT_INFO, bufff, sizeof(bufff));
+    evaluar(estado);
+
+    printf("break \n");
+    estado = psa_key_derivation_output_key(&atributo3, &operacion, &llave_derivada);
+    evaluar(estado);
+    estado = psa_key_derivation_output_bytes(&operacion, &llave_derivadaB, sizeof(llave_derivadaB));
+    evaluar(estado);
+    estado = psa_key_derivation_abort(&operacion);
+    // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
+    char clave_publica_hex3[135]; 
+    char post_data3[256];
+    for (int i = 0; i < sizeof(llave_derivadaB); i++)
+    {
+        snprintf(clave_publica_hex3 + (2 * i), sizeof(clave_publica_hex3) - (2 * i), "%02x", llave_derivadaB[i]);
+    }
+    
+    for (int i = 0; i < sizeof(llave_derivadaB); i++)
+    {
+        printf("%02x", llave_derivadaB[i]);
+    }
+    printf("\n");
+    printf("\nDerivada1: %s", clave_publica_hex3);
+    cJSON *jsonObject3 = cJSON_CreateObject();
+    cJSON_AddStringToObject(jsonObject3, "DerivadaB", clave_publica_hex3);
+    char *jsonData3 = cJSON_PrintUnformatted(jsonObject3);
+    
+    /*snprintf(post_data, sizeof(post_data), "{\"message\":\"%s\"}", clave_publica_hex);
+    printf("\n%s",post_data);
+*/
+
+    esp_http_client_set_url(client, "http://192.168.1.69:500/Derivada");
+    esp_http_client_set_method(client, HTTP_METHOD_POST);
+    esp_http_client_set_header(client, "X-Server-ID", "esp1");
+    esp_http_client_set_header(client, "Content-Type", "application/json");
+    // err=esp_http_client_set_post_field(client, clave_publica_hex, strlen(clave_publica_hex));
+    err = esp_http_client_set_post_field(client, jsonData3, strlen(jsonData3));
+    ESP_LOGE(TAG, " %s", esp_err_to_name(err));
+    err = esp_http_client_perform(client);
+    if (err == ESP_OK)
+    {
+        ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %lld",
+                 esp_http_client_get_status_code(client),
+                 esp_http_client_get_content_length(client));
+    }
+    else
+    {
+        ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
+    }
+    vuelta++;
+
+    // Get verify
+
+    esp_http_client_set_url(cliente2, "http://192.168.1.69:500/verificacion2");
+    esp_http_client_set_header(cliente2, "X-Server-ID", "esp1");
+    // esp_http_client_set_header(client, "Content-Type", "application/json");
+    esp_http_client_set_method(cliente2, HTTP_METHOD_GET);
+    err = esp_http_client_perform(cliente2);
+
+    if (err == ESP_OK)
+    {
+        ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
+                 esp_http_client_get_status_code(cliente2),
+                 esp_http_client_get_content_length(cliente2));
+
+        // Leer los datos de la respuesta HTTP
+
+        int buffer_size = esp_http_client_get_content_length(cliente2) + 1;
+
+        // Leer los datos de la respuesta HTTP en fragmentos más pequeños
+        char *buffer = malloc(buffer_size);
+        int total_read_len = 0;
+        int read_len;
+        psa_cipher_operation_t operation;
+        operation = psa_cipher_operation_init();
+        uint8_t ivs[33];
+        uint8_t mensaje = 54;
+        size_t olenC;
+        while ((read_len = esp_http_client_read(cliente2, buffer + total_read_len, buffer_size - total_read_len)) > 0)
         {
-            printf("%02x", bytes[t]);
+            total_read_len += read_len;
+
+            // Comprobar si se ha alcanzado el tamaño máximo del búfer
+            if (total_read_len == buffer_size)
+            {
+                // Aumentar el tamaño del búfer
+                buffer_size *= 2;
+                buffer = realloc(buffer, buffer_size);
+            }
         }
-        estado = psa_key_derivation_setup(&operacion, PSA_ALG_KEY_AGREEMENT(PSA_ALG_ECDH, PSA_ALG_HKDF(PSA_ALG_SHA_256)));
 
-        evaluar(estado);
-        estado = psa_key_derivation_input_bytes(&operacion, PSA_KEY_DERIVATION_INPUT_SALT, bytes, sizeof(bytes));
-        // estado = psa_key_derivation_input_integer(&operacion,PSA_KEY_DERIVATION_INPUT_SALT,vuelta);
-        evaluar(estado);
-        // vuelta++;
-        estado = psa_key_derivation_key_agreement(&operacion, PSA_KEY_DERIVATION_INPUT_SECRET, llave_privada_bob, &llave_alice, sizeof(llave_alice));
-        evaluar(estado);
-        // estado=psa_key_derivation_set_capacity(&operacion,256);
-        // evaluar(estado);
-        estado = psa_key_derivation_input_bytes(&operacion, PSA_KEY_DERIVATION_INPUT_INFO, compartidaB, sizeof(compartidaB));
-        evaluar(estado);
+        // Asegurarse de que el búfer esté terminado con un carácter nulo
+        buffer[total_read_len] = '\0';
+        printf("%s", local_response_buffer);
+        cJSON *json = cJSON_Parse(local_response_buffer);
 
-        printf("break \n");
-        estado = psa_key_derivation_output_key(&atributo3, &operacion, &llave_derivada);
-        evaluar(estado);
-        estado = psa_key_derivation_output_bytes(&operacion, &llave_derivadaB, sizeof(llave_derivadaB));
-        evaluar(estado);
-
-        char clave_publica_hex3[135]; // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
-        char post_data3[256];
-        for (int i = 0; i < sizeof(llave_derivadaB); i++)
+        if (json == NULL)
         {
-            snprintf(clave_publica_hex3 + (2 * i), sizeof(clave_publica_hex3) - (2 * i), "%02x", llave_derivadaB[i]);
-        }
-        for (int i = 0; i < sizeof(llave_derivadaB); i++)
-        {
-            printf("%02x", llave_derivadaB[i]);
-        }
-        printf("\n");
-        printf("\n%s", clave_publica_hex3);
-        cJSON *jsonObject3 = cJSON_CreateObject();
-        cJSON_AddStringToObject(jsonObject3, "DerivadaB", clave_publica_hex3);
-        char *jsonData3 = cJSON_PrintUnformatted(jsonObject3);
-        /*snprintf(post_data, sizeof(post_data), "{\"message\":\"%s\"}", clave_publica_hex);
-        printf("\n%s",post_data);
-    */
-
-        esp_http_client_set_url(client, "http://192.168.1.69:500/Derivada");
-        esp_http_client_set_method(client, HTTP_METHOD_POST);
-        esp_http_client_set_header(client, "X-Server-ID", "esp1");
-        esp_http_client_set_header(client, "Content-Type", "application/json");
-        // err=esp_http_client_set_post_field(client, clave_publica_hex, strlen(clave_publica_hex));
-        err = esp_http_client_set_post_field(client, jsonData3, strlen(jsonData3));
-        ESP_LOGE(TAG, " %s", esp_err_to_name(err));
-        err = esp_http_client_perform(client);
-        if (err == ESP_OK)
-        {
-            ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %lld",
-                     esp_http_client_get_status_code(client),
-                     esp_http_client_get_content_length(client));
+            const char *error_ptr = cJSON_GetErrorPtr();
+            if (error_ptr != NULL)
+            {
+                ESP_LOGE(TAG, "Error parsing JSON: %s", error_ptr);
+            }
+            // Manejar el error de análisis del JSON
         }
         else
         {
-            ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
-        }
-        // Get verify
-        esp_http_client_handle_t cliente2 = esp_http_client_init(&config);
-        esp_http_client_set_url(cliente2, "http://192.168.1.69:500/verificacion2");
-        esp_http_client_set_header(cliente2, "X-Server-ID", "esp1");
-        // esp_http_client_set_header(client, "Content-Type", "application/json");
-        esp_http_client_set_method(cliente2, HTTP_METHOD_GET);
-        err = esp_http_client_perform(cliente2);
-        int vp = 0;
-
-        if (err == ESP_OK)
-        {
-            ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
-                     esp_http_client_get_status_code(cliente2),
-                     esp_http_client_get_content_length(cliente2));
-
-            // Leer los datos de la respuesta HTTP
-
-            int buffer_size = esp_http_client_get_content_length(cliente2) + 1;
-
-            // Leer los datos de la respuesta HTTP en fragmentos más pequeños
-            char *buffer = malloc(buffer_size);
-            int total_read_len = 0;
-            int read_len;
-            psa_cipher_operation_t operation;
-            operation = psa_cipher_operation_init();
-            uint8_t ivs[33];
-            uint8_t mensaje = 54;
-            size_t olenC;
-            while ((read_len = esp_http_client_read(cliente2, buffer + total_read_len, buffer_size - total_read_len)) > 0)
+            cJSON *esp1 = cJSON_GetObjectItem(json, "esp1");
+            if (esp1 != NULL)
             {
-                total_read_len += read_len;
-
-                // Comprobar si se ha alcanzado el tamaño máximo del búfer
-                if (total_read_len == buffer_size)
+                // cJSON *messages = cJSON_GetObjectItem(esp1, "messages");
+                cJSON *valor2 = cJSON_GetObjectItem(esp1, "valor2");
+                if (valor2 != NULL)
                 {
-                    // Aumentar el tamaño del búfer
-                    buffer_size *= 2;
-                    buffer = realloc(buffer, buffer_size);
-                }
-            }
-
-            // Asegurarse de que el búfer esté terminado con un carácter nulo
-            buffer[total_read_len] = '\0';
-            printf("%s", local_response_buffer);
-            cJSON *json = cJSON_Parse(local_response_buffer);
-
-            if (json == NULL)
-            {
-                const char *error_ptr = cJSON_GetErrorPtr();
-                if (error_ptr != NULL)
-                {
-                    ESP_LOGE(TAG, "Error parsing JSON: %s", error_ptr);
-                }
-                // Manejar el error de análisis del JSON
-            }
-            else
-            {
-                cJSON *esp1 = cJSON_GetObjectItem(json, "esp1");
-                if (esp1 != NULL)
-                {
-                    // cJSON *messages = cJSON_GetObjectItem(esp1, "messages");
-                    cJSON *valor2 = cJSON_GetObjectItem(esp1, "valor2");
-                    if (valor2 != NULL)
+                    if (cJSON_IsNumber(valor2))
                     {
-                        if (cJSON_IsNumber(valor2))
+                        value2 = cJSON_GetNumberValue(valor2);
+                        if (value2 == 0)
                         {
-                            value2 = cJSON_GetNumberValue(valor2);
-                            if (value2 == 0)
-                            {
-                                ESP_LOGI(TAG, "LOGRADO");
-                                size_t olenC;
-                                estado = psa_cipher_encrypt_setup(&cifrado, llave_derivada, PSA_ALG_CTR);
-                                evaluar(estado);
-                                estado = psa_cipher_generate_iv(&cifrado, &ivs, sizeof(ivs), &olenC);
-                                evaluar(estado);
-                                /*estado=psa_cipher_update(&cifrado,&mensaje,sizeof(mensaje),&llave_aes,sizeof(llave_aesB),&llave_aesB);
-
-                                estado=psa_cipher_finish(&cifrado,&llave_aes,sizeof(llave_aesB),&llave_aesB);
-                                evaluar(estado);*/
-                                estado = psa_cipher_encrypt(llave_derivada, &cifrado, &mensaje, sizeof(mensaje), &llave_aes, sizeof(llave_aesB), &llave_aesB);
-                                evaluar(estado)
-                            }
-                        }
-                        else
-                        {
-                            ESP_LOGE(TAG, "ERRORRRRRR");
+                            ESP_LOGI(TAG, "LOGRADO");
                         }
                     }
-                    else
-                    {
-                        ESP_LOGE(TAG, "ERRORRRRRR2");
-                    }
-                }
-                else
-                {
-                    ESP_LOGE(TAG, "ERRORRRRRR3");
                 }
             }
-            else
-            {
-                ESP_LOGE(TAG, "ERRORRRRRR4");
-            }
-
-
-                // POST CIFRADO
-
-                psa_cipher_operation_t operation;
-            operation = psa_cipher_operation_init();
-            uint8_t ivs[33];
-            uint8_t mensaje = 54;
-
-           
-                size_t olenC;
-            estado = psa_cipher_encrypt_setup(&cifrado, llave_derivada, PSA_ALG_CTR);
-            evaluar(estado);
-            estado = psa_cipher_generate_iv(&cifrado, &ivs, sizeof(ivs), &olenC);
-            evaluar(estado);
-            /*estado=psa_cipher_update(&cifrado,&mensaje,sizeof(mensaje),&llave_aes,sizeof(llave_aesB),&llave_aesB);
-
-            estado=psa_cipher_finish(&cifrado,&llave_aes,sizeof(llave_aesB),&llave_aesB);
-            evaluar(estado);*/
-            estado = psa_cipher_encrypt(llave_derivada, &cifrado, &mensaje, sizeof(mensaje), &llave_aes, sizeof(llave_aesB), &llave_aesB);
-            evaluar(estado)
-            /*char clave_publica_hex3[135]; // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
-            char post_data3[256];
-            for (int i = 0; i < sizeof(llave_derivadaB); i++)
-            {
-                snprintf(clave_publica_hex3 + (2 * i), sizeof(clave_publica_hex3) - (2 * i), "%02x", llave_derivadaB[i]);
-            }
-            for (int i = 0; i < sizeof(llave_derivadaB); i++)
-            {
-                printf("%02x", llave_derivadaB[i]);
-            }
-            printf("\n");
-            printf("\n%s", clave_publica_hex3);
-            cJSON *jsonObject3 = cJSON_CreateObject();
-            cJSON_AddStringToObject(jsonObject3, "DerivadaB", clave_publica_hex3);
-            char *jsonData3 = cJSON_PrintUnformatted(jsonObject3);
-            snprintf(post_data, sizeof(post_data), "{\"message\":\"%s\"}", clave_publica_hex);
-            printf("\n%s",post_data);
-
-
-            esp_http_client_set_url(client, "http://192.168.1.69:500/Derivada");
-            esp_http_client_set_method(client, HTTP_METHOD_POST);
-            esp_http_client_set_header(client, "X-Server-ID", "esp1");
-            esp_http_client_set_header(client, "Content-Type", "application/json");
-            // err=esp_http_client_set_post_field(client, clave_publica_hex, strlen(clave_publica_hex));
-            err = esp_http_client_set_post_field(client, jsonData3, strlen(jsonData3));
-            ESP_LOGE(TAG, " %s", esp_err_to_name(err));
-            err = esp_http_client_perform(client);
-            if (err == ESP_OK)
-            {
-                ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %lld",
-                         esp_http_client_get_status_code(client),
-                         esp_http_client_get_content_length(client));
-            }
-            else
-            {
-                ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
-            }*/
-
-            /*
-                char clave_publica_hex3[135]; // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
-                char post_data3[256];
-                for (int i = 0; i < sizeof(compartidaB); i++)
-                {
-                    snprintf(clave_publica_hex2 + (2 * i), sizeof(clave_publica_hex2) - (2 * i), "%02x", compartidaB[i]);
-                }
-                for (int i = 0; i < sizeof(compartidaB); i++)
-                {
-                    printf("%d", compartidaB[i]);
-                }
-                printf("\n");
-                printf("\n%s", clave_publica_hex3);
-                cJSON *jsonObject3 = cJSON_CreateObject();
-                cJSON_AddStringToObject(jsonObject3, "compartidaB", clave_publica_hex2);
-                char *jsonData3 = cJSON_PrintUnformatted(jsonObject2);
-
-
-
-                esp_http_client_set_url(client, "http://192.168.1.69:500/derivada");
-                esp_http_client_set_method(client, HTTP_METHOD_POST);
-                esp_http_client_set_header(client, "X-Server-ID", "esp1");
-                esp_http_client_set_header(client, "Content-Type", "application/json");
-                // err=esp_http_client_set_post_field(client, clave_publica_hex, strlen(clave_publica_hex));
-                err = esp_http_client_set_post_field(client, jsonData2, strlen(jsonData2));
-                ESP_LOGE(TAG, " %s", esp_err_to_name(err));
-                err = esp_http_client_perform(client);
-                if (err == ESP_OK)
-                {
-                    ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %lld",
-                             esp_http_client_get_status_code(client),
-                             esp_http_client_get_content_length(client));
-                }
-                else
-                {
-                    ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
-                }*/
         }
     }
+    vuelta++;
+    // CIFRAR
+    psa_cipher_operation_t cifrado, cifrado2;
+    
+    cifrado = psa_cipher_operation_init();
+    cifrado2 = psa_cipher_operation_init();
+    uint8_t iv_s[PSA_CIPHER_IV_LENGTH(PSA_KEY_TYPE_AES, PSA_ALG_CTR)];
+    memset(iv_s, 0, sizeof(iv_s));
+    uint8_t mensaje[32];
+    uint8_t descifrado[33];
+    srand(time(NULL));
+    for (size_t i = 0; i < sizeof(mensaje); i++)
+    {
+        mensaje[i] = (uint8_t)rand();
+    }
+    printf("Números aleatorios:\n");
+    for (size_t i = 0; i < sizeof(mensaje); i++)
+    {
+        printf("%u ", mensaje[i]);
+    }
+    printf("\n");
+    size_t olenC, olenD;
+    estado = psa_import_key(&atributo3, llave_derivadaB, sizeof(llave_derivadaB), &comp2);
+    evaluar(estado);
+    estado = psa_cipher_encrypt_setup(&cifrado, comp2, PSA_ALG_CTR);
+    evaluar(estado);
+    estado = psa_cipher_decrypt_setup(&cifrado2, comp2, PSA_ALG_CTR);
+    evaluar(estado);
+    // estado=psa_cipher_set_iv(&cifrado,&iv_s,output_lenC);
+    /*estado = psa_cipher_generate_iv(&cifrado, &iv_s, PSA_CIPHER_IV_LENGTH(PSA_KEY_TYPE_AES,PSA_ALG_CTR), &output_lenC);
+    evaluar(estado);*/
+    estado = psa_cipher_set_iv(&cifrado, &iv_s, 16);
+    evaluar(estado);
+    estado = psa_cipher_set_iv(&cifrado2, &iv_s, 16);
+    evaluar(estado);
+    // printf("%ld",output_lenC);
+    estado = psa_cipher_update(&cifrado, mensaje, sizeof(mensaje), &llave_aesB, sizeof(llave_aesB), &olenD);
+
+    estado = psa_cipher_finish(&cifrado, &llave_aesB, sizeof(llave_aesB), &olenD);
+    evaluar(estado);
+    //------------------------------------------------------------------------------------------------------
+
+    estado = psa_cipher_update(&cifrado2, llave_aesB, sizeof(llave_aesB), &descifrado, sizeof(descifrado), &output_lenB);
+    evaluar(estado);
+    estado = psa_cipher_finish(&cifrado2, &descifrado, sizeof(descifrado), &output_lenB);
+    evaluar(estado);
+
+    char clave_publica_hex4[135]; // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
+
+    for (int i = 0; i < sizeof(llave_aesB); i++)
+    {
+        snprintf(clave_publica_hex4 + (2 * i), sizeof(clave_publica_hex4) - (2 * i), "%02x", llave_aesB[i]);
+    }
+    for (int i = 0; i < sizeof(llave_aesB); i++)
+    {
+        // printf("%d", llave_aesB[i]);
+    }
+    printf("\n");
+    printf("\nCIfrado:%s", clave_publica_hex4);
+
+    char clave_publica_hex5[135]; // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
+
+    for (int i = 0; i < sizeof(descifrado); i++)
+    {
+        snprintf(clave_publica_hex5 + (2 * i), sizeof(clave_publica_hex5) - (2 * i), "%02x", descifrado[i]);
+    }
+    for (int i = 0; i < sizeof(descifrado); i++)
+    {
+        // printf("%d", descifrado[i]);
+    }
+    char clave_publica_hex6[PSA_CIPHER_IV_LENGTH(PSA_KEY_TYPE_AES, PSA_ALG_CTR)]; // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
+
+    for (int i = 0; i < PSA_CIPHER_IV_LENGTH(PSA_KEY_TYPE_AES, PSA_ALG_CTR); i++)
+    {
+        snprintf(clave_publica_hex6 + (2 * i), sizeof(clave_publica_hex6) - (2 * i), "%02x", iv_s[i]);
+    }
+    for (int i = 0; i < sizeof(iv_s); i++)
+    {
+        // printf("%d", descifrado[i]);
+    }
+    printf("\n");
+    for (int i = 0; i < sizeof(iv_s); i++)
+    {
+        printf("%02x", iv_s[i]);
+    }
+    printf("\n");
+    printf("\nIV:%s", clave_publica_hex6);
+
+    printf("\n");
+    printf("\nDescifrado:%s", clave_publica_hex5);
+
+    cJSON *jsonObject4 = cJSON_CreateObject();
+    cJSON_AddStringToObject(jsonObject4, "msg", clave_publica_hex4);
+
+    char *jsonData4 = cJSON_PrintUnformatted(jsonObject4);
+
+    esp_http_client_set_url(client, "http://192.168.1.69:500/cifrado");
+    esp_http_client_set_method(client, HTTP_METHOD_POST);
+    esp_http_client_set_header(client, "X-Server-ID", "esp1");
+    esp_http_client_set_header(client, "Content-Type", "application/json");
+    // err=esp_http_client_set_post_field(client, clave_publica_hex, strlen(clave_publica_hex));
+    err = esp_http_client_set_post_field(client, jsonData4, strlen(jsonData4));
+    ESP_LOGE(TAG, " %s", esp_err_to_name(err));
+    err = esp_http_client_perform(client);
+    if (err == ESP_OK)
+    {
+        ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %lld",
+                 esp_http_client_get_status_code(client),
+                 esp_http_client_get_content_length(client));
+    }
+    else
+    {
+        ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
+    }
+
+    // DESCIFRAR
+    esp_http_client_set_url(cliente2, "http://192.168.1.69:500/descifrado");
+    esp_http_client_set_header(cliente2, "X-Server-ID", "esp1");
+    // esp_http_client_set_header(client, "Content-Type", "application/json");
+    esp_http_client_set_method(cliente2, HTTP_METHOD_GET);
+    err = esp_http_client_perform(cliente2);
+
+    if (err == ESP_OK)
+    {
+        ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
+                 esp_http_client_get_status_code(cliente2),
+                 esp_http_client_get_content_length(cliente2));
+
+        // Leer los datos de la respuesta HTTP
+
+        int buffer_size = esp_http_client_get_content_length(cliente2) + 1;
+
+        // Leer los datos de la respuesta HTTP en fragmentos más pequeños
+        char *buffer = malloc(buffer_size);
+        int total_read_len = 0;
+        int read_len;
+        uint8_t msg2[32];
+        while ((read_len = esp_http_client_read(cliente2, buffer + total_read_len, buffer_size - total_read_len)) > 0)
+        {
+            total_read_len += read_len;
+
+            // Comprobar si se ha alcanzado el tamaño máximo del búfer
+            if (total_read_len == buffer_size)
+            {
+                // Aumentar el tamaño del búfer
+                buffer_size *= 2;
+                buffer = realloc(buffer, buffer_size);
+            }
+        }
+
+        // Asegurarse de que el búfer esté terminado con un carácter nulo
+        buffer[total_read_len] = '\0';
+        printf("%s", local_response_buffer);
+        cJSON *json = cJSON_Parse(local_response_buffer);
+
+        cJSON *cifrado = cJSON_GetObjectItem(json, "cifrado");
+
+        /* code */
+        psa_key_handle_t comp3;
+        char cmp[150];
+        for (int i = 0; i < sizeof(llave_derivadaB); i++)
+    {
+        snprintf(cmp + (2 * i), sizeof(cmp) - (2 * i), "%02x", llave_derivadaB[i]);
+    }
+    
+        uint8_t iv_s2[PSA_CIPHER_IV_LENGTH(PSA_KEY_TYPE_AES, PSA_ALG_CTR)];
+        memset(iv_s2, 0, sizeof(iv_s));
+        char *valor77 = cJSON_GetStringValue(cifrado);
+        printf(" %s\n", valor77);
+        printf(" %s\n",cmp );
+        uint8_t descifrado2[32];
+        uint8_t usar[65];
+        hexToBytes(cmp,usar,sizeof(usar));
+        estado = psa_import_key(&atributo3, llave_derivadaB, sizeof(llave_derivadaB), &comp3);
+        evaluar(estado);
+        hexToBytes(valor77, msg2, sizeof(msg2));
+        estado = psa_cipher_decrypt_setup(&cifrado2, comp3, PSA_ALG_CTR);
+        evaluar(estado);
+        estado = psa_cipher_set_iv(&cifrado2, &iv_s2, 16);
+        evaluar(estado);
+        estado = psa_cipher_update(&cifrado2, msg2, sizeof(msg2), descifrado2, sizeof(descifrado2), &output_lenB);
+        evaluar(estado);
+        estado = psa_cipher_finish(&cifrado2, msg2, sizeof(msg2), &output_lenB);
+        evaluar(estado);
+        char clave_publica_hex11[135]; // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
+
+        for (int i = 0; i < sizeof(descifrado2); i++)
+        {
+            snprintf(clave_publica_hex11 + (2 * i), sizeof(clave_publica_hex11) - (2 * i), "%02x", descifrado2[i]);
+        }
+        printf("\n");
+        printf("\nDescifrado2:%s", clave_publica_hex11);
+    
 }
+
+}
+
 static void http_test_task(void *pvParameters)
 {
 
