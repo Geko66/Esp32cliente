@@ -177,6 +177,16 @@ void evaluar(psa_status_t estado)
         printf("PSA_ERROR_DATA_INVALID");
     }
 }
+int hex_to_int(char c) {
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    } else if (c >= 'a' && c <= 'f') {
+        return 10 + (c - 'a');
+    } else if (c >= 'A' && c <= 'F') {
+        return 10 + (c - 'A');
+    }
+    return -1; // Carácter no válido
+}
 void stringToHex(const char *str)
 {
     while (*str)
@@ -467,7 +477,7 @@ static void http_rest_with_url(void)
      * If URL as well as host and path parameters are specified, values of host and path will be considered.
      */
     esp_http_client_config_t config = {
-        .url = "http://192.168.1.102:80/iniciar", // 69:500 pc  114:80 esp
+        .url = "http://192.168.1.114:80/iniciar", // 69:500 pc  114:80 esp
         .method = HTTP_METHOD_GET,
         .event_handler = _http_event_handler,
         .user_data = local_response_buffer, // Pass address of local buffer to get response
@@ -516,7 +526,7 @@ static void http_rest_with_url(void)
     printf("\n%s",post_data);
 */
 
-    esp_http_client_set_url(client, "http://192.168.1.102:80/enviarMSG");
+    esp_http_client_set_url(client, "http://192.168.1.114:80/enviarMSG");
     esp_http_client_set_method(client, HTTP_METHOD_POST);
     esp_http_client_set_header(client, "X-Server-ID", "esp1");
     esp_http_client_set_header(client, "Content-Type", "application/json");
@@ -557,7 +567,7 @@ static void http_rest_with_url(void)
     }
 */
     esp_http_client_handle_t cliente = esp_http_client_init(&config);
-    esp_http_client_set_url(cliente, "http://192.168.1.102:80/mensajes");
+    esp_http_client_set_url(cliente, "http://192.168.1.114:80/mensajes");
     esp_http_client_set_header(cliente, "X-Server-ID", "esp1");
     // esp_http_client_set_header(client, "Content-Type", "application/json");
     esp_http_client_set_method(cliente, HTTP_METHOD_GET);
@@ -843,7 +853,7 @@ static void http_rest_with_url(void)
     printf("\n%s",post_data);
 */
 
-    esp_http_client_set_url(client, "http://192.168.1.102:80/compartida");
+    esp_http_client_set_url(client, "http://192.168.1.114:80/compartida");
     esp_http_client_set_method(client, HTTP_METHOD_POST);
     esp_http_client_set_header(client, "X-Server-ID", "esp1");
     esp_http_client_set_header(client, "Content-Type", "application/json");
@@ -864,7 +874,7 @@ static void http_rest_with_url(void)
 
     // GET veryfy
     esp_http_client_handle_t cliente2 = esp_http_client_init(&config);
-    esp_http_client_set_url(cliente2, "http://192.168.1.102:80/verificacion");
+    esp_http_client_set_url(cliente2, "http://192.168.1.114:80/verificacion");
     esp_http_client_set_header(cliente2, "X-Server-ID", "esp1");
     // esp_http_client_set_header(client, "Content-Type", "application/json");
     esp_http_client_set_method(cliente2, HTTP_METHOD_GET);
@@ -1077,7 +1087,7 @@ static void http_rest_with_url(void)
     printf("\n%s",post_data);
 */
 
-    esp_http_client_set_url(client, "http://192.168.1.102:80/Derivada");
+    esp_http_client_set_url(client, "http://192.168.1.114:80/Derivada");
     esp_http_client_set_method(client, HTTP_METHOD_POST);
     esp_http_client_set_header(client, "X-Server-ID", "esp1");
     esp_http_client_set_header(client, "Content-Type", "application/json");
@@ -1099,7 +1109,7 @@ static void http_rest_with_url(void)
 
     // Get verify
 
-    esp_http_client_set_url(cliente2, "http://192.168.1.102:80/verificacion2");
+    esp_http_client_set_url(cliente2, "http://192.168.1.114:80/verificacion2");
     esp_http_client_set_header(cliente2, "X-Server-ID", "esp1");
     // esp_http_client_set_header(client, "Content-Type", "application/json");
     esp_http_client_set_method(cliente2, HTTP_METHOD_GET);
@@ -1183,7 +1193,21 @@ static void http_rest_with_url(void)
     uint8_t mensaje[32];
     uint8_t descifrado[33];
     srand(time(NULL));
-    for (size_t i = 0; i < sizeof(mensaje); i++)
+    
+     char cadena99[] = "Hola soy el cliente esp1";
+           // uint8_t mensaje[sizeof(cadena99)];
+
+            strcpy((char *)mensaje, cadena99);
+
+             for (size_t i = 0; i < sizeof(mensaje); i++) {
+                 printf("%u ", mensaje[i]);
+             }
+    // Imprimir mensaje
+    printf("Mensaje:\n");
+    for (size_t i = 0; i < sizeof(mensaje); i++) {
+    printf("%c", mensaje[i]);
+    }
+    /*for (size_t i = 0; i < sizeof(mensaje); i++)
     {
         mensaje[i] = (uint8_t)rand();
     }
@@ -1191,7 +1215,7 @@ static void http_rest_with_url(void)
     for (size_t i = 0; i < sizeof(mensaje); i++)
     {
         printf("%u ", mensaje[i]);
-    }
+    }*/
     printf("\n");
     size_t olenC, olenD;
     estado = psa_import_key(&atributo3, llave_derivadaB, sizeof(llave_derivadaB), &comp2);
@@ -1247,34 +1271,34 @@ static void http_rest_with_url(void)
     }
     char clave_publica_hex6[PSA_CIPHER_IV_LENGTH(PSA_KEY_TYPE_AES, PSA_ALG_CTR)]; // 65 bytes (2 caracteres hexadecimales por byte) + 1 byte nulo
 
-    /*for (int i = 0; i < PSA_CIPHER_IV_LENGTH(PSA_KEY_TYPE_AES, PSA_ALG_CTR); i++)
-    {
-        snprintf(clave_publica_hex6 + (2 * i), sizeof(clave_publica_hex6) - (2 * i), "%02x", iv_s[i]);
+    
+    int length = strlen(clave_publica_hex99);
+    char mensaje_en_claro[length / 2 + 1]; // Espacio suficiente para el mensaje en claro
+    int e, r = 0;
+
+    for (e = 0; e < length; e += 2) {
+        char c1 = clave_publica_hex99[e];
+        char c2 = clave_publica_hex99[e + 1];
+
+        int valor_ascii = (hex_to_int(c1) << 4) | hex_to_int(c2);
+        mensaje_en_claro[j++] = valor_ascii;
     }
-    for (int i = 0; i < sizeof(iv_s); i++)
-    {
-        // printf("%d", descifrado[i]);
-    }*/
-   /* printf("\n");
-    for (int i = 0; i < sizeof(iv_s); i++)
-    {
-        printf("%02x", iv_s[i]);
-    }
-    printf("\n");
-    printf("\nIV:%s", clave_publica_hex6);*/
+    mensaje_en_claro[r] = '\0'; // Agrega el carácter nulo al final
 
     printf("\n");
+    
+    
     ESP_LOGE(TAG, "------------------------------------------------------------------------");
-    ESP_LOGI(TAG,"MENSAJE DESCIFRADO CLIENTE: %s",clave_publica_hex99);
+    ESP_LOGI(TAG,"MENSAJE DESCIFRADO CLIENTE HEX: %s",clave_publica_hex99);
     ESP_LOGE(TAG, "\n------------------------------------------------------------------------\n");
     //printf("\nDescifrado:%s", clave_publica_hex5);
-
+    ESP_LOGI(TAG,"MENSAJE DESCIFRADO CLIENTE: %s",cadena99);
     cJSON *jsonObject4 = cJSON_CreateObject();
     cJSON_AddStringToObject(jsonObject4, "msg", clave_publica_hex4);
 
     char *jsonData4 = cJSON_PrintUnformatted(jsonObject4);
 
-    esp_http_client_set_url(client, "http://192.168.1.102:80/cifrado");
+    esp_http_client_set_url(client, "http://192.168.1.114:80/cifrado");
     esp_http_client_set_method(client, HTTP_METHOD_POST);
     esp_http_client_set_header(client, "X-Server-ID", "esp1");
     esp_http_client_set_header(client, "Content-Type", "application/json");
@@ -1294,7 +1318,7 @@ static void http_rest_with_url(void)
     }
 
     // DESCIFRAR
-    esp_http_client_set_url(cliente2, "http://192.168.1.102:80/descifrado");
+    esp_http_client_set_url(cliente2, "http://192.168.1.114:80/descifrado");
     esp_http_client_set_header(cliente2, "X-Server-ID", "esp1");
     // esp_http_client_set_header(client, "Content-Type", "application/json");
     esp_http_client_set_method(cliente2, HTTP_METHOD_GET);
@@ -1314,7 +1338,7 @@ static void http_rest_with_url(void)
         char *buffer = malloc(buffer_size);
         int total_read_len = 0;
         int read_len;
-        uint8_t msg2[32];
+        uint8_t msg2[33];
         while ((read_len = esp_http_client_read(cliente2, buffer + total_read_len, buffer_size - total_read_len)) > 0)
         {
             total_read_len += read_len;
@@ -1348,7 +1372,7 @@ static void http_rest_with_url(void)
         char *valor77 = cJSON_GetStringValue(cifrado);
        // printf(" %s\n", valor77);
         //printf(" %s\n",cmp );
-        uint8_t descifrado2[32];
+        uint8_t descifrado2[33];
         uint8_t usar[65];
         //hexToBytes(cmp,usar,sizeof(usar));
         estado = psa_import_key(&atributo3, llave_derivadaB, sizeof(llave_derivadaB), &comp3);
@@ -1373,8 +1397,21 @@ static void http_rest_with_url(void)
             snprintf(clave_publica_hex11 + (2 * i), sizeof(clave_publica_hex11) - (2 * i), "%02x", descifrado2[i]);
         }
         printf("\n");
+        int length = strlen(clave_publica_hex11);
+    char mensaje_en_claro[length / 2 + 1]; // Espacio suficiente para el mensaje en claro
+    int i, j = 0;
+
+    for (i = 0; i < length; i += 2) {
+        char c1 = clave_publica_hex11[i];
+        char c2 = clave_publica_hex11[i + 1];
+
+        int valor_ascii = (hex_to_int(c1) << 4) | hex_to_int(c2);
+        mensaje_en_claro[j++] = valor_ascii;
+    }
+    mensaje_en_claro[j] = '\0'; // Agrega el carácter nulo al final
+        ESP_LOGI(TAG,"MENSAJE DESCIFRADO SERVIDOR HEX: %s",clave_publica_hex11);
         ESP_LOGE(TAG, "------------------------------------------------------------------------");
-        ESP_LOGI(TAG,"MENSAJE DESCIFRADO SERVIDOR: %s",clave_publica_hex11);
+        ESP_LOGI(TAG,"MENSAJE DESCIFRADO SERVIDOR: %s",mensaje_en_claro);
         ESP_LOGE(TAG, "\n------------------------------------------------------------------------\n");
         //printf("\nDescifrado2:%s", clave_publica_hex11);
     
